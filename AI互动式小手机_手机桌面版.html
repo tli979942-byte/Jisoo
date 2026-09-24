@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI互动式小手机</title>
+<style>
+:root{--bg:#f3f1ee;--card:#fff;--ink:#3f403e;--muted:#8b8c88;--line:#e5e2de;--accent:#777e72;--accent2:#d8ddd1}
+*{box-sizing:border-box}body{margin:0;background:#dcd9d4;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC",sans-serif}
+#phone{width:min(430px,100vw);height:100dvh;min-height:620px;margin:auto;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;position:relative;box-shadow:0 12px 35px #0002}
+.status{height:34px;padding:8px 16px 0;display:flex;justify-content:space-between;font-size:12px;color:#696b68}
+header{height:58px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:#f7f5f2}
+header h1{font-size:19px;margin:0;font-weight:650}.icon{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:21px}
+.icon:active,.btn:active,.tab:active,.bubble:active{transform:scale(.94);transition:.08s}
+main{flex:1;overflow:auto}.page{display:none;height:100%;overflow:auto}.page.active{display:block}
+.bottom{height:68px;display:flex;background:#f8f7f4;border-top:1px solid var(--line);padding-bottom:max(4px,env(safe-area-inset-bottom))}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:#92938f}.tab.active{color:#555b52}.tab span:first-child{font-size:20px}
+.list{padding:12px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px;box-shadow:0 4px 18px #0001}
+.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.grow{flex:1}.muted{color:var(--muted);font-size:12px}.title{font-weight:650}.small{font-size:13px}
+.avatar{width:45px;height:45px;border-radius:14px;background:var(--accent2);display:grid;place-items:center;font-size:20px;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}
+.btn{padding:9px 13px;border-radius:12px;background:#e7e9e2}.btn.primary{background:var(--accent);color:#fff}.btn.danger{background:#f1dfdf;color:#985d5d}.btn.ghost{background:#f4f2ef}
+input,textarea,select{width:100%;border:1px solid var(--line);background:#faf9f7;border-radius:12px;padding:10px 11px;outline:none;color:var(--ink)}textarea{resize:vertical;min-height:90px}.field{margin:10px 0}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.pill{font-size:11px;padding:4px 8px;border-radius:99px;background:#eceee9}
+.empty{text-align:center;color:var(--muted);padding:45px 20px}.section{padding:15px 14px 5px;font-size:13px;color:#777}
+.chat-list{padding:0}.chat-item{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;gap:11px}.chat-item .preview{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-size:12px;margin-top:4px}
+.chat-window{display:none;position:absolute;inset:34px 0 0;background:var(--bg);z-index:5;flex-direction:column}.chat-window.active{display:flex}
+.chat-top{height:58px;background:#f7f5f2;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:8px 10px;gap:8px}
+.chat-head{display:flex;align-items:center;gap:10px}.messages{flex:1;overflow:auto;padding:14px}.msg{display:flex;margin:8px 0}.msg.me{justify-content:flex-end}
+.bubble{max-width:78%;padding:10px 12px;border-radius:15px;background:#fff;line-height:1.5;white-space:pre-wrap;word-break:break-word}.me .bubble{background:#dce2d6}
+.sticker{max-width:120px;max-height:120px;border-radius:10px}.voice{display:inline-flex;align-items:center;gap:8px}
+.chat-input{padding:8px;background:#f5f3ef;border-top:1px solid var(--line)}.chat-input textarea{min-height:42px;max-height:100px;resize:none}
+.input-row{display:flex;gap:7px;align-items:end}.plus{width:42px;height:42px;border-radius:12px;background:#e4e2dd}.response{height:42px;background:var(--accent);color:white;border-radius:12px;padding:0 14px}
+.toolbar{display:none;padding:8px;gap:8px;flex-wrap:wrap}.toolbox{background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px;font-size:12px}.toolbox input{font-size:12px;padding:7px}
+.modal{position:absolute;inset:0;background:#0005;display:none;align-items:flex-end;z-index:10}.modal.active{display:flex}.sheet{width:100%;max-height:88%;overflow:auto;background:#f7f5f2;border-radius:22px 22px 0 0;padding:16px}.sheet h2{margin:0 0 12px;font-size:18px}
+.check{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid var(--line);border-radius:12px;margin:7px 0;background:#fff}.check input{width:auto}
+.toast{position:absolute;left:50%;bottom:82px;transform:translateX(-50%) translateY(20px);background:#454943;color:#fff;padding:9px 13px;border-radius:12px;font-size:12px;opacity:0;pointer-events:none;transition:.25s;z-index:30}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.home-screen{position:absolute;inset:34px 0 0;display:flex;flex-direction:column;background:radial-gradient(circle at 18% 15%,#ffffffb8 0 3%,transparent 20%),radial-gradient(circle at 88% 30%,#d8ddd180 0 5%,transparent 25%),linear-gradient(145deg,#f4f1ed,#e4e0da);z-index:2}
+.home-main{flex:1;overflow:auto;padding:24px 18px 12px}
+.home-time{font-size:55px;font-weight:300;letter-spacing:-2px;line-height:1;margin:8px 5px 5px}
+.home-date{font-size:13px;color:var(--muted);margin:0 6px 30px}
+.app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px 10px}
+.app-icon-wrap,.dock-item{border:0;background:transparent;padding:0;color:inherit;font:inherit;cursor:pointer;text-align:center}
+.app-icon{width:62px;height:62px;margin:auto;border-radius:20px;display:grid;place-items:center;background:linear-gradient(145deg,#ffffffd9,#e8e5dfd9);border:1px solid #fff;box-shadow:0 8px 18px #00000012,inset 0 1px #fff;font-size:27px;color:#626760}
+.app-label{display:block;font-size:11px;margin-top:7px;color:#555852}
+.dock{margin:0 12px 12px;min-height:76px;padding:9px 10px;border-radius:25px;display:flex;align-items:center;justify-content:space-around;gap:10px;background:#ffffff96;border:1px solid #ffffffaa;box-shadow:0 10px 30px #00000012,inset 0 1px #fff;backdrop-filter:blur(16px)}
+.dock-item{min-width:62px;font-size:9px;color:#72746f}
+.dock-icon{display:grid;place-items:center;width:49px;height:49px;margin:auto;border-radius:16px;background:#f4f3ef;box-shadow:0 5px 12px #00000010;font-size:22px;color:#60645e}
+.app-screen{position:absolute;inset:34px 0 0;display:none;flex-direction:column;background:var(--bg);z-index:3}
+.app-screen.active{display:flex}
+.home-back{background:#eceae5}
+.home-screen button:active,.dock-item:active,.app-icon-wrap:active{transform:scale(.94);transition:.08s}
+</style>
+</head>
+<body>
+<div id="phone">
+<div class="status"><span id="clock">12:00</span><span>● ◒ ▰</span></div>
+
+<section id="homeScreen" class="home-screen">
+<div class="home-main">
+<div class="home-time" id="homeTime">12:00</div>
+<div class="home-date" id="homeDate">星期四 · 9月24日</div>
+<div class="app-grid">
+<button class="app-icon-wrap" data-open-app="chat"><span class="app-icon">◔</span><span class="app-label">微信</span></button>
+<button class="app-icon-wrap" data-open-app="world"><span class="app-icon">▦</span><span class="app-label">世界书</span></button>
+<button class="app-icon-wrap" data-open-app="settings"><span class="app-icon">⚙</span><span class="app-label">设置</span></button>
+</div>
+</div>
+<div class="dock">
+<button class="dock-item" data-open-app="chat"><span class="dock-icon">◔</span><span>微信</span></button>
+<button class="dock-item" data-open-app="world"><span class="dock-icon">▦</span><span>世界书</span></button>
+<button class="dock-item" data-open-app="settings"><span class="dock-icon">⚙</span><span>设置</span></button>
+</div>
+</section>
+
+<section id="appScreen" class="app-screen">
+<header><button class="icon home-back" id="homeBack">⌂</button><h1 id="headerTitle">微信</h1><button class="icon" id="headerAction">＋</button></header>
+<main>
+<section id="page-chat" class="page active"><div id="chatList" class="chat-list"></div></section>
+<section id="page-settings" class="page"><div class="list" id="settingsList"></div></section>
+<section id="page-world" class="page"><div class="list" id="worldList"></div></section>
+</main>
+<nav class="bottom">
+<button class="tab active" data-page="chat"><span>◔</span><span>微信</span></button>
+<button class="tab" data-page="world"><span>▦</span><span>世界书</span></button>
+<button class="tab" data-page="settings"><span>⚙</span><span>设置</span></button>
+</nav>
+</section>
+
+<div id="chatWindow" class="chat-window">
+<div class="chat-top"><button class="icon" id="backChat">‹</button><div class="chat-head grow"><div class="avatar" id="chatAvatar">◌</div><div><div class="title" id="chatName">角色</div><div class="muted" id="chatRemark"></div></div></div><button class="icon" id="editChar">⋯</button></div>
+<div class="messages" id="messages"></div>
+<div class="chat-input">
+<div class="toolbar" id="toolbar"><button class="toolbox" id="voiceBtn">模拟语音</button><button class="toolbox" id="stickerBtn">表情包</button><input id="stickerFile" type="file" accept="image/*" multiple hidden></div>
+<div class="input-row"><button class="plus" id="plusBtn">＋</button><textarea id="chatInput" rows="1" placeholder="输入消息…"></textarea><button class="response" id="responseBtn">响应</button></div>
+</div></div>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div><div class="toast" id="toast"></div>
+</div>
+
+<script>
+const K='miniPhone_v1';
+const state=JSON.parse(localStorage.getItem(K)||'null')||{apis:[],currentApi:null,chars:[],worlds:[],stickers:[],chats:{}};
+const save=()=>localStorage.setItem(K,JSON.stringify(state));
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function toast(t){let x=$('#toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1800)}
+function apiBase(url){let u=(url||'').trim().replace(/\/+$/,'');if(!u)return '';if(!/\/v1$/i.test(u))u+='/v1';return u}
+function activeApi(){return state.apis.find(x=>x.id===state.currentApi)||state.apis[0]}
+function activeWorlds(ch){return state.worlds.filter(w=>w.scope==='global'||(ch?.boundWorldBookIds||[]).includes(w.id))}
+function systemPrompt(ch){let world=activeWorlds(ch).map(w=>`【世界书：${w.name}】\n${w.content}`).join('\n\n');return `你正在扮演角色“${ch.name}”。\n备注：${ch.remark||''}\n角色设定：\n${ch.role||''}\n\n${world?world+'\n\n':''}请保持角色一致，不要跳出角色。表情包若需要发送，请严格使用[表情:名称]。`}
+function parseAI(text){let out=[],last=0,re=/\[表情:([^\]]+)\]/g,m;while((m=re.exec(text))){if(m.index>last)out.push({type:'text',text:text.slice(last,m.index)});let st=state.stickers.find(s=>s.name===m[1].trim());out.push(st?{type:'sticker',...st}:{type:'text',text:m[0]});last=re.lastIndex}if(last<text.length)out.push({type:'text',text:text.slice(last)});return out}
+async function callAPI(ch,messages){let a=activeApi();if(!a)throw Error('请先在设置里配置 API');let base=apiBase(a.url);let r=await fetch(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+a.key},body:JSON.stringify({model:a.model||'',temperature:Number(a.temperature??.8),messages:[{role:'system',content:systemPrompt(ch)},...messages]})});if(!r.ok)throw Error('API 请求失败：HTTP '+r.status);let d=await r.json();return d?.choices?.[0]?.message?.content||'（模型没有返回内容）'}
+function renderChats(){let el=$('#chatList');if(!state.chars.length){el.innerHTML='<div class="empty">还没有角色。<br>点击右上角 ＋ 创建第一个角色。</div>';return}el.innerHTML=state.chars.map(c=>{let h=(state.chats[c.id]||[]).slice(-1)[0];return `<div class="chat-item" data-open="${c.id}"><div class="avatar">${c.avatar?`<img src="${c.avatar}">`:'◌'}</div><div class="grow"><div class="row between"><b>${esc(c.name)}</b><span class="muted">›</span></div><div class="preview">${esc(h?.text||c.remark||'暂无消息')}</div></div></div>`}).join('')}
+function renderSettings(){let a=activeApi();$('#settingsList').innerHTML=`<div class="card"><div class="row between"><div><div class="title">当前 API</div><div class="muted">${esc(a?.name||'未配置')}</div></div><button class="btn primary" id="addApi">添加</button></div></div>`+state.apis.map(x=>`<div class="card"><div class="row"><div class="grow"><div class="title">${esc(x.name)}</div><div class="muted">${esc(x.model||'未选择模型')}</div></div><span class="pill">${x.id===state.currentApi?'使用中':'已保存'}</span></div><div class="row" style="margin-top:10px"><button class="btn" data-useapi="${x.id}">使用</button><button class="btn" data-editapi="${x.id}">编辑</button><button class="btn danger" data-delapi="${x.id}">删除</button></div></div>`).join('')+`<div class="card"><div class="title">说明</div><div class="muted" style="margin-top:6px">浏览器直连 API 可能受到服务端 CORS 限制。模型列表使用 /models，聊天使用 /chat/completions。</div></div>`}
+function renderWorlds(){let groups={};state.worlds.forEach(w=>(groups[w.folderId||'默认分组']??=[]).push(w));$('#worldList').innerHTML=`<div class="card row between"><div><b>世界书</b><div class="muted">全局世界书会自动进入所有角色的系统提示</div></div><button class="btn primary" id="addWorld">添加</button></div>`+Object.entries(groups).map(([g,ws])=>`<div class="section">${esc(g)}</div>`+ws.map(w=>`<div class="card"><div class="row between"><div class="grow"><b>${esc(w.name)}</b><div class="muted">${w.scope==='global'?'全局':'局部'} · ${esc(w.content.slice(0,70))}</div></div><span class="pill">${w.scope}</span></div><div class="row" style="margin-top:9px"><button class="btn" data-editworld="${w.id}">编辑</button><button class="btn danger" data-delworld="${w.id}">删除</button></div></div>`).join('')).join('')}
+function openModal(html){$('#sheet').innerHTML=html;$('#modal').classList.add('active')}function closeModal(){$('#modal').classList.remove('active')}
+function apiForm(a={}){openModal(`<h2>${a.id?'编辑':'添加'} API</h2><div class="field"><label>名称</label><input id="fApiName" value="${esc(a.name||'')}"></div><div class="field"><label>API URL</label><input id="fApiUrl" placeholder="https://example.com/v1" value="${esc(a.url||'')}"></div><div class="field"><label>Key</label><input id="fApiKey" type="password" value="${esc(a.key||'')}"></div><div class="field"><label>模型</label><select id="fApiModel"><option value="">先获取模型列表</option>${a.model?`<option selected>${esc(a.model)}</option>`:''}</select></div><div class="field"><label>Temperature</label><input id="fTemp" type="number" step=".1" min="0" max="2" value="${a.temperature??.8}"></div><div class="row"><button class="btn" id="fetchModels">获取模型列表</button><button class="btn primary grow" id="saveApi">保存</button></div><button class="btn" style="width:100%;margin-top:8px" id="cancel">取消</button>`);$('#fetchModels').onclick=async()=>{try{let base=apiBase($('#fApiUrl').value),r=await fetch(base+'/models',{headers:{Authorization:'Bearer '+$('#fApiKey').value}});if(!r.ok)throw Error('HTTP '+r.status);let d=await r.json(),ms=(d.data||d.models||[]).map(x=>typeof x==='string'?x:x.id).filter(Boolean);$('#fApiModel').innerHTML=ms.map(m=>`<option>${esc(m)}</option>`).join('')||'<option>未发现模型</option>';toast('模型列表已获取')}catch(e){toast(e.message||'获取失败')}};$('#saveApi').onclick=()=>{let x={id:a.id||uid(),name:$('#fApiName').value.trim()||'API',url:$('#fApiUrl').value.trim(),key:$('#fApiKey').value,model:$('#fApiModel').value,temperature:$('#fTemp').value},i=state.apis.findIndex(v=>v.id===x.id);if(i<0)state.apis.push(x);else state.apis[i]=x;if(!state.currentApi)state.currentApi=x.id;save();closeModal();renderSettings();toast('API 已保存')};$('#cancel').onclick=closeModal}
+function charForm(c={}){let bound=new Set(c.boundWorldBookIds||[]);openModal(`<h2>${c.id?'编辑角色':'创建角色'}</h2><div class="field"><label>名称</label><input id="fName" value="${esc(c.name||'')}"></div><div class="field"><label>备注</label><input id="fRemark" value="${esc(c.remark||'')}"></div><div class="field"><label>角色设定</label><textarea id="fRole">${esc(c.role||'')}</textarea></div><div class="field"><label>头像图片</label><input id="fAvatar" type="file" accept="image/*"></div><div class="field"><label>绑定世界书（全局世界书无需手动绑定）</label>${state.worlds.filter(w=>w.scope==='local').map(w=>`<label class="check"><input type="checkbox" value="${w.id}" ${bound.has(w.id)?'checked':''}>${esc(w.name)}</label>`).join('')||'<div class="muted">暂无局部世界书</div>'}</div><div class="row"><button class="btn" id="cancel">取消</button><button class="btn primary grow" id="saveChar">保存</button></div>`);$('#saveChar').onclick=async()=>{let avatar=c.avatar||'',file=$('#fAvatar').files[0];if(file)avatar=await new Promise(res=>{let r=new FileReader;r.onload=()=>res(r.result);r.readAsDataURL(file)});let x={id:c.id||uid(),name:$('#fName').value.trim()||'未命名角色',remark:$('#fRemark').value.trim(),role:$('#fRole').value,avatar,boundWorldBookIds:[...$('#sheet').querySelectorAll('input[type=checkbox]:checked')].map(x=>x.value)},i=state.chars.findIndex(v=>v.id===x.id);if(i<0)state.chars.push(x);else state.chars[i]=x;state.chats[x.id]??=[];save();closeModal();renderChats();toast('角色已保存')};$('#cancel').onclick=closeModal}
+function worldForm(w={}){openModal(`<h2>${w.id?'编辑':'添加'} 世界书</h2><div class="field"><label>名称</label><input id="fWName" value="${esc(w.name||'')}"></div><div class="field"><label>分组</label><input id="fWGroup" value="${esc(w.folderId||'默认分组')}"></div><div class="field"><label>作用范围</label><select id="fWScope"><option value="global" ${w.scope==='global'?'selected':''}>全局</option><option value="local" ${w.scope==='local'?'selected':''}>局部</option></select></div><div class="field"><label>世界规则 / 背景设定</label><textarea id="fWContent" style="min-height:180px">${esc(w.content||'')}</textarea></div><div class="row"><button class="btn" id="cancel">取消</button><button class="btn primary grow" id="saveWorld">保存</button></div>`);$('#saveWorld').onclick=()=>{let x={id:w.id||uid(),name:$('#fWName').value.trim()||'未命名世界书',folderId:$('#fWGroup').value.trim()||'默认分组',scope:$('#fWScope').value,content:$('#fWContent').value},i=state.worlds.findIndex(v=>v.id===x.id);if(i<0)state.worlds.push(x);else state.worlds[i]=x;save();closeModal();renderWorlds();toast('世界书已保存')};$('#cancel').onclick=closeModal}
+function openChat(id){let c=state.chars.find(x=>x.id===id);if(!c)return;window.currentChar=c;$('#chatName').textContent=c.name;$('#chatRemark').textContent=c.remark||'';$('#chatAvatar').innerHTML=c.avatar?`<img src="${c.avatar}">`:'◌';renderMessages();$('#chatWindow').classList.add('active')}
+function renderMessages(){let arr=state.chats[window.currentChar.id]||[];$('#messages').innerHTML=arr.map(m=>`<div class="msg ${m.role==='user'?'me':''}"><div class="bubble">${m.parts?m.parts.map(p=>p.type==='sticker'?`<img class="sticker" src="${p.url}">`:esc(p.text)).join(''):esc(m.text)}</div></div>`).join('');$('#messages').scrollTop=999999}
+async function sendResponse(){let input=$('#chatInput'),text=input.value.trim();if(!text)return;let c=window.currentChar;state.chats[c.id]??=[];state.chats[c.id].push({role:'user',text});input.value='';renderMessages();save();if(!activeApi()){toast('先配置 API');return}try{let history=state.chats[c.id].slice(-30).map(x=>({role:x.role==='user'?'user':'assistant',content:x.text||x.parts?.map(p=>p.text||'').join('')||''})),reply=await callAPI(c,history);state.chats[c.id].push({role:'assistant',parts:parseAI(reply),text:reply});save();renderMessages()}catch(e){state.chats[c.id].push({role:'assistant',text:'[请求失败] '+e.message});save();renderMessages();toast(e.message||'请求失败')}}
+$('#headerAction').onclick=()=>{$('#headerTitle').textContent==='微信'&&charForm()}
+$('#backChat').onclick=()=>$('#chatWindow').classList.remove('active');
+$('#plusBtn').onclick=()=>$('#toolbar').style.display=$('#toolbar').style.display==='flex'?'none':'flex';
+$('#responseBtn').onclick=sendResponse;
+$('#voiceBtn').onclick=()=>{let text=$('#chatInput').value.trim()||'语音消息';state.chats[window.currentChar.id].push({role:'user',text:'[语音] '+text});$('#chatInput').value='';save();renderMessages();toast('已发送模拟语音')};
+$('#stickerBtn').onclick=()=>$('#stickerFile').click();
+$('#stickerFile').onchange=async e=>{for(let f of e.target.files){let url=await new Promise(res=>{let r=new FileReader;r.onload=()=>res(r.result);r.readAsDataURL(f)}),name=f.name.replace(/\.[^.]+$/,'');state.stickers.push({id:uid(),name,url,isGlobal:true})}save();toast('表情包已导入');e.target.value=''};
+$('#editChar').onclick=()=>charForm(window.currentChar);
+$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+$('#chatList').onclick=e=>{let x=e.target.closest('[data-open]');if(x)openChat(x.dataset.open)};
+$('#settingsList').onclick=e=>{let t=e.target;if(t.id==='addApi')apiForm();if(t.dataset.useapi){state.currentApi=t.dataset.useapi;save();renderSettings();toast('已切换 API')}if(t.dataset.editapi)apiForm(state.apis.find(x=>x.id===t.dataset.editapi));if(t.dataset.delapi){state.apis=state.apis.filter(x=>x.id!==t.dataset.delapi);if(state.currentApi===t.dataset.delapi)state.currentApi=state.apis[0]?.id||null;save();renderSettings()}};
+$('#worldList').onclick=e=>{let t=e.target;if(t.id==='addWorld')worldForm();if(t.dataset.editworld)worldForm(state.worlds.find(x=>x.id===t.dataset.editworld));if(t.dataset.delworld){state.worlds=state.worlds.filter(x=>x.id!==t.dataset.delworld);state.chars.forEach(c=>c.boundWorldBookIds=(c.boundWorldBookIds||[]).filter(id=>id!==t.dataset.delworld));save();renderWorlds();toast('已删除')}};
+function openApp(app){
+$('#homeScreen').style.display='none';
+$('#appScreen').classList.add('active');
+$$('.page').forEach(x=>x.classList.remove('active'));
+const page=app==='chat'?'chat':app==='world'?'world':'settings';
+$('#page-'+page).classList.add('active');
+$$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
+$('#headerTitle').textContent=page==='chat'?'微信':page==='world'?'世界书':'设置';
+$('#headerAction').textContent=page==='chat'||page==='world'?'＋':'';
+if(page==='chat')renderChats();
+if(page==='world')renderWorlds();
+if(page==='settings')renderSettings();
+}
+function goHome(){
+$('#chatWindow').classList.remove('active');
+$('#appScreen').classList.remove('active');
+$('#homeScreen').style.display='flex';
+}
+$$('[data-open-app]').forEach(x=>x.onclick=()=>openApp(x.dataset.openApp));
+$('#homeBack').onclick=goHome;
+$$('.tab').forEach(t=>t.onclick=()=>openApp(t.dataset.page));
+function updateClock(){
+const now=new Date();
+const time=now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+$('#clock').textContent=time;
+$('#homeTime').textContent=time;
+$('#homeDate').textContent=now.toLocaleDateString('zh-CN',{weekday:'long',month:'long',day:'numeric'});
+}
+updateClock();
+setInterval(updateClock,1000);
+renderChats();renderSettings();renderWorlds();
+</script>
+</body>
+</html>
