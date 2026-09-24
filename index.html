@@ -49,7 +49,8 @@ input,textarea,select{width:100%;border:1px solid var(--line);background:#faf9f7
 .home-back{background:#eceae5}
 .home-screen button:active,.dock-item:active,.app-icon-wrap:active{transform:scale(.94);transition:.08s}
 
-<style id="minimal-monochrome">
+/* minimal-monochrome */
+
 /* 黑白灰极简版：不显示网页状态栏，保留真正的手机桌面结构 */
 :root{
   --bg:#f5f5f5;--card:#fff;--ink:#202020;--muted:#8a8a8a;
@@ -211,7 +212,8 @@ input,textarea,select{
 }
 .toast{background:#222;color:#fff}
 
-<style id="customize-style">
+/* customize-style */
+
 #homeScreen.custom-wallpaper{background-size:cover;background-position:center;background-repeat:no-repeat}
 #homeScreen.custom-wallpaper:after{content:"";position:absolute;inset:0;background:#0000;pointer-events:none}
 #homeScreen.custom-wallpaper .home-main,#homeScreen.custom-wallpaper .dock{position:relative;z-index:1}
@@ -219,90 +221,66 @@ input,textarea,select{
 .icon-setting:last-child{border-bottom:0}
 .icon-preview{width:46px;height:46px;border-radius:14px;overflow:hidden;display:grid;place-items:center;background:#eee;border:1px solid #ddd;font-size:21px;flex:none}
 .icon-preview img{width:100%;height:100%;object-fit:cover}
+.app-icon img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
 .icon-setting .name{flex:1;font-size:13px;font-weight:600}
 .icon-actions{display:flex;gap:6px}
 .icon-actions label{cursor:pointer}
 </style>
-
-</style>
-
-</style>
-
-<style id="three-page-widgets">
-.desktop-pages{position:absolute;inset:0;overflow:hidden}
-.desktop-page{position:absolute;inset:0;overflow:hidden;opacity:0;pointer-events:none;transform:translateX(16px);transition:opacity .2s ease,transform .2s ease}
-.desktop-page.active{opacity:1;pointer-events:auto;transform:none}
-.desktop-page[data-page="0"]{display:flex;flex-direction:column}
-.desktop-page[data-page="0"] .home-main{position:relative;z-index:2}
-.page-dots{position:absolute;left:0;right:0;bottom:88px;z-index:20;display:flex;justify-content:center;gap:7px}
+<style id="desktop-pages-style">
+.home-screen{overflow:hidden}
+.desktop-pages{position:absolute;inset:0;width:300%;display:flex;transition:transform .28s cubic-bezier(.22,.8,.22,1);touch-action:pan-y}
+.desktop-page{position:relative;flex:0 0 33.333333%;width:33.333333%;height:100%;overflow:hidden}
+.desktop-page .home-main{height:calc(100% - 100px)}
+.desktop-widget-grid{height:100%;padding:48px 18px 120px;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:max-content;gap:16px 10px;align-content:start}
+.desktop-widget{grid-column:span 2;grid-row:span 2;aspect-ratio:1;border:1px solid #ddd;border-radius:22px;background:#f7f7f7;overflow:hidden;padding:0;box-shadow:0 8px 24px #0000000d}
+.desktop-widget img{width:100%;height:100%;object-fit:cover;display:block}
+.desktop-widget-empty{width:100%;height:100%;display:grid;place-items:center;color:#999;font-size:12px}
+.page-dots{position:absolute;left:0;right:0;bottom:84px;z-index:20;display:flex;justify-content:center;gap:7px}
 .page-dot{width:6px;height:6px;padding:0;border:0;border-radius:50%;background:#c5c5c5}
 .page-dot.active{background:#222}
-.desktop-page:not([data-page="0"]){padding:24px 18px 120px;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:max-content;gap:22px 10px;align-content:start}
-.home-widget{grid-column:span 2;grid-row:span 2;aspect-ratio:1;border:1px solid #ddd;border-radius:22px;background:#f7f7f7;overflow:hidden;padding:0;box-shadow:0 8px 24px #0000000d;cursor:pointer}
-.home-widget img{width:100%;height:100%;object-fit:cover;display:block}
-.home-widget .widget-placeholder{width:100%;height:100%;display:grid;place-items:center;color:#999;font-size:12px}
-.widget-row{display:grid;grid-template-columns:58px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
-.widget-preview{width:58px;height:58px;border-radius:13px;background:#f3f3f3;overflow:hidden;display:grid;place-items:center;color:#999}
-.widget-preview img{width:100%;height:100%;object-fit:cover}
-.widget-actions{display:flex;gap:6px}
-.widget-actions button{border:1px solid #ddd;background:#fff;border-radius:10px;padding:7px 9px}
-</style>
-
-<style>
-.wechat-placeholder{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#999;padding:30px}
-.wechat-placeholder-icon{width:72px;height:72px;border:1px solid #ddd;border-radius:22px;display:grid;place-items:center;font-size:28px;color:#777;margin-bottom:16px;background:#fafafa}
-.wechat-placeholder h2{margin:0 0 8px;color:#222;font-size:20px}
-.wechat-placeholder p{margin:0;max-width:260px;line-height:1.7;font-size:13px}
-.me-profile{display:flex;align-items:center;gap:14px;margin:16px}
-.me-avatar{width:56px;height:56px;border-radius:14px;background:#eee;display:grid;place-items:center;color:#777;font-size:22px}
-.menu-row{width:100%;display:flex;align-items:center;gap:12px;border:0;border-bottom:1px solid #eee;background:#fff;padding:17px 16px;text-align:left;font-size:15px;color:#222}
-.menu-row:last-child{border-bottom:0}
-</style>
-
-<style id="widget-page-fix">
-.desktop-page[data-page="1"]{grid-template-columns:repeat(4,1fr);align-content:start}
-.desktop-page[data-page="1"] .home-widget{grid-column:span 2;grid-row:span 2}
-.desktop-page[data-page="1"]:empty:after{
-  content:"向左滑动进入下一页";
-  grid-column:1/-1;
-  margin-top:120px;
-  text-align:center;
-  color:#aaa;
-  font-size:12px;
-}
-.home-widget{touch-action:manipulation}
-</style>
-</head>
+.desktop-page-placeholder{height:100%;display:grid;place-items:center;text-align:center;color:#999;font-size:13px;line-height:1.8}
+.desktop-page-placeholder span{font-size:11px}
+#app-widgets .widget-row{display:grid;grid-template-columns:58px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
+#app-widgets .widget-preview{width:58px;height:58px;border-radius:14px;background:#f3f3f3;overflow:hidden;display:grid;place-items:center;color:#999}
+#app-widgets .widget-preview img{width:100%;height:100%;object-fit:cover}
+#app-widgets .widget-actions{display:flex;gap:6px}
+#app-widgets .widget-actions button{border:1px solid #ddd;background:#fff;border-radius:10px;padding:7px 9px}
+#app-widgets .widget-home{border:1px solid #ddd;background:#fff;border-radius:10px;padding:8px 12px}
+</style></head>
 <body>
 <div id="phone">
 
 <section id="homeScreen" class="home-screen">
-<div class="desktop-pages">
-<section class="desktop-page active" data-page="0">
-<div class="home-main">
-<div class="home-time" id="homeTime">12:00</div>
-<div class="home-date" id="homeDate">星期四 · 9月24日</div>
-<div class="app-grid">
-<button class="app-icon-wrap" data-open-app="chat"><span class="app-icon">◔</span><span class="app-label">微信</span></button>
-<button class="app-icon-wrap" data-open-app="world"><span class="app-icon">▦</span><span class="app-label">世界书</span></button>
-<button class="app-icon-wrap" data-open-app="settings"><span class="app-icon">⚙</span><span class="app-label">设置</span></button>
-<button class="app-icon-wrap" data-open-app="beautify"><span class="app-icon">✦</span><span class="app-label">美化</span></button>
-<button class="app-icon-wrap" data-open-app="widgets"><span class="app-icon">▣</span><span class="app-label">小组件</span></button>
-</div>
-</div>
-<div class="dock">
-<button class="dock-item" data-open-app="chat"><span class="dock-icon">◔</span><span>微信</span></button>
-<button class="dock-item" data-open-app="world"><span class="dock-icon">▦</span><span>世界书</span></button>
-<button class="dock-item" data-open-app="settings"><span class="dock-icon">⚙</span><span>设置</span></button>
-</div>
-</section>
-<section class="desktop-page" data-page="1"></section>
-<section class="desktop-page" data-page="2"></section>
+<div id="desktopPages" class="desktop-pages">
+  <section class="desktop-page active" data-page="0">
+    <div class="home-main">
+      <div class="home-time" id="homeTime">12:00</div>
+      <div class="home-date" id="homeDate">星期四 · 9月24日</div>
+      <div class="app-grid">
+        <button class="app-icon-wrap" data-open-app="chat"><span class="app-icon">◔</span><span class="app-label">微信</span></button>
+        <button class="app-icon-wrap" data-open-app="world"><span class="app-icon">▦</span><span class="app-label">世界书</span></button>
+        <button class="app-icon-wrap" data-open-app="settings"><span class="app-icon">⚙</span><span class="app-label">设置</span></button>
+        <button class="app-icon-wrap" data-open-app="beautify"><span class="app-icon">✦</span><span class="app-label">美化</span></button>
+        <button class="app-icon-wrap" data-open-app="widgets"><span class="app-icon">▣</span><span class="app-label">小组件</span></button>
+      </div>
+    </div>
+    <div class="dock">
+      <button class="dock-item" data-open-app="chat"><span class="dock-icon">◔</span><span>微信</span></button>
+      <button class="dock-item" data-open-app="world"><span class="dock-icon">▦</span><span>世界书</span></button>
+      <button class="dock-item" data-open-app="settings"><span class="dock-icon">⚙</span><span>设置</span></button>
+    </div>
+  </section>
+  <section class="desktop-page" data-page="1">
+    <div class="desktop-widget-grid" id="widgetDesktopGrid"></div>
+  </section>
+  <section class="desktop-page" data-page="2">
+    <div class="desktop-page-placeholder">第三页<br><span>以后继续往这里塞 App</span></div>
+  </section>
 </div>
 <div class="page-dots" id="pageDots">
-<button class="page-dot active" data-page-dot="0"></button>
-<button class="page-dot" data-page-dot="1"></button>
-<button class="page-dot" data-page-dot="2"></button>
+  <button class="page-dot active" data-page-dot="0"></button>
+  <button class="page-dot" data-page-dot="1"></button>
+  <button class="page-dot" data-page-dot="2"></button>
 </div>
 </section>
 
@@ -310,47 +288,24 @@ input,textarea,select{
 <header><button class="icon home-back" id="homeBack">⌂</button><h1 id="headerTitle">微信</h1><button class="icon" id="headerAction">＋</button></header>
 <main>
 <section id="page-chat" class="page active"><div id="chatList" class="chat-list"></div></section>
-
-<section id="page-moments" class="page">
-  <div class="wechat-placeholder">
-    <div class="wechat-placeholder-icon">◉</div>
-    <h2>朋友圈</h2>
-    <p>这里以后可以继续加入动态、图片、点赞和评论。</p>
-  </div>
-</section>
-
-<section id="page-me" class="page">
-  <div class="me-profile card">
-    <div class="me-avatar">●</div>
-    <div class="grow"><div class="title">我的</div><div class="muted">个人资料与其他功能</div></div>
-    <span class="muted">›</span>
-  </div>
-  <div class="list">
-    <button class="menu-row" data-page-jump="world"><span>▦</span><span class="grow">世界书</span><span>›</span></button>
-    <button class="menu-row" data-page-jump="settings"><span>⚙</span><span class="grow">设置</span><span>›</span></button>
-  </div>
-</section>
-
 <section id="page-settings" class="page"><div class="list" id="settingsList"></div></section>
 <section id="page-world" class="page"><div class="list" id="worldList"></div></section>
 </main>
-
 <nav class="bottom">
-<button class="tab active" data-page="chat"><span>◔</span><span>聊天</span></button>
-<button class="tab" data-page="moments"><span>◉</span><span>朋友圈</span></button>
-<button class="tab" data-page="me"><span>●</span><span>我的</span></button>
+<button class="tab active" data-page="chat"><span>◔</span><span>微信</span></button>
+<button class="tab" data-page="world"><span>▦</span><span>世界书</span></button>
+<button class="tab" data-page="settings"><span>⚙</span><span>设置</span></button>
 </nav>
 </section>
 
 
-
 <section id="app-widgets" class="app-screen">
-<header><button class="icon home-back" data-widgets-home>⌂</button><h1>小组件</h1><button class="icon" data-add-widget>＋</button></header>
+<header><button class="icon home-back" id="widgetHome">⌂</button><h1>小组件</h1><button class="icon" id="addWidget">＋</button></header>
 <main>
 <div class="list">
 <div class="card">
 <div class="title">桌面小组件</div>
-<div class="muted" style="margin:6px 0 12px">添加比 App 图标更大的图片格子。添加后会出现在第二页桌面。</div>
+<div class="muted" style="margin:6px 0 12px">添加后会出现在桌面第二页。点击桌面上的小组件可以重新上传图片。</div>
 <div id="widgetSettingsList"></div>
 </div>
 </div>
@@ -404,87 +359,10 @@ const APP_META={
  chat:{name:'微信',symbol:'◔'},
  world:{name:'世界书',symbol:'▦'},
  settings:{name:'设置',symbol:'⚙'},
- beautify:{name:'美化',symbol:'✦'},widgets:{name:'小组件',symbol:'▣'}
+ beautify:{name:'美化',symbol:'✦'},
+ widgets:{name:'小组件',symbol:'▣'}
 };
 function saveTheme(){localStorage.setItem(THEME_K,JSON.stringify(theme))}
-
-const WIDGET_K='miniPhone_widgets_v2';
-let widgets=[];
-try{widgets=JSON.parse(localStorage.getItem(WIDGET_K)||'[]')}catch(e){widgets=[]}
-if(!Array.isArray(widgets))widgets=[];
-function saveWidgets(){localStorage.setItem(WIDGET_K,JSON.stringify(widgets))}
-function readWidgetImage(file,cb){
- if(!file)return;
- const r=new FileReader();
- r.onload=()=>cb(r.result);
- r.readAsDataURL(file);
-}
-function renderWidgets(){
- const page=$('.desktop-page[data-page="1"]');
- if(!page)return;
- page.querySelectorAll('.home-widget').forEach(x=>x.remove());
- widgets.forEach(w=>{
-   const el=document.createElement('button');
-   el.className='home-widget';
-   el.dataset.widgetId=w.id;
-   el.innerHTML=w.image?`<img src="${w.image}" alt="">`:'<span class="widget-placeholder">点击上传图片</span>';
-   const input=document.createElement('input');
-   input.type='file';input.accept='image/*';input.hidden=true;input.dataset.widgetFile=w.id;
-   el.appendChild(input);
-   page.appendChild(el);
- });
-}
-function renderWidgetSettings(){
- const box=$('#widgetSettingsList');
- if(!box)return;
- box.innerHTML=widgets.length?widgets.map(w=>`
- <div class="widget-row">
-  <div class="widget-preview">${w.image?`<img src="${w.image}" alt="">`:'＋'}</div>
-  <div>小组件</div>
-  <div class="widget-actions">
-   <button data-widget-change="${w.id}">更换</button>
-   <button data-widget-delete="${w.id}">删除</button>
-  </div>
-  <input type="file" accept="image/*" hidden data-widget-setting-file="${w.id}">
- </div>`).join(''):'<div class="muted">还没有小组件，点右上角 ＋ 添加一个。</div>';
-}
-function openWidgets(){
- $('#homeScreen').style.display='none';
- $$('.app-screen').forEach(x=>x.classList.remove('active'));
- $('#app-widgets').classList.add('active');
- renderWidgetSettings();
-}
-function addWidget(){
- const id=Date.now().toString(36);
- widgets.push({id,image:''});
- saveWidgets();renderWidgets();renderWidgetSettings();
-}
-function bindWidgets(){
- document.querySelector('[data-widgets-home]')?.addEventListener('click',goHome);
- document.addEventListener('click',e=>{
-   const open=e.target.closest('[data-open-app="widgets"]');
-   if(open){openWidgets();return}
-   const tile=e.target.closest('.home-widget');
-   if(tile){tile.querySelector('[data-widget-file]')?.click();return}
-   const change=e.target.closest('[data-widget-change]');
-   if(change){document.querySelector(`[data-widget-setting-file="${change.dataset.widgetChange}"]`)?.click();return}
-   const del=e.target.closest('[data-widget-delete]');
-   if(del){widgets=widgets.filter(w=>w.id!==del.dataset.widgetDelete);saveWidgets();renderWidgets();renderWidgetSettings();return}
-   if(e.target.closest('[data-add-widget]')){addWidget();return}
-   if(e.target.closest('[data-widgets-home]')){goHome();return}
- });
- document.addEventListener('change',e=>{
-   const input=e.target;
-   const id=input.dataset.widgetFile||input.dataset.widgetSettingFile;
-   if(!id||!input.files?.[0])return;
-   readWidgetImage(input.files[0],data=>{
-     const w=widgets.find(x=>x.id===id);
-     if(!w)return;
-     w.image=data;saveWidgets();renderWidgets();renderWidgetSettings();
-   });
- });
-}
-
 function applyTheme(){
  const home=$('#homeScreen');
  if(theme.wallpaper){
@@ -515,6 +393,63 @@ function renderIconSettings(){
   </div>`;
  }).join('');
 }
+
+const WIDGET_K='miniPhone_widgets_v2';
+let widgets=JSON.parse(localStorage.getItem(WIDGET_K)||'[]');
+if(!Array.isArray(widgets))widgets=[];
+function saveWidgets(){localStorage.setItem(WIDGET_K,JSON.stringify(widgets))}
+function readImage(file){
+ return new Promise((resolve,reject)=>{
+  const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);
+ });
+}
+function renderDesktopWidgets(){
+ const box=$('#widgetDesktopGrid');if(!box)return;
+ box.innerHTML=widgets.map(w=>`<button class="desktop-widget" data-widget-id="${w.id}">${w.image?`<img src="${w.image}" alt="">`:'<span class="desktop-widget-empty">点击上传图片</span>'}</button>`).join('');
+}
+function renderWidgetSettings(){
+ const box=$('#widgetSettingsList');if(!box)return;
+ box.innerHTML=widgets.length?widgets.map(w=>`<div class="widget-row">
+ <div class="widget-preview">${w.image?`<img src="${w.image}" alt="">`:'＋'}</div>
+ <div class="grow"><div class="title">小组件</div><div class="muted">桌面第二页</div></div>
+ <div class="widget-actions"><button data-widget-change="${w.id}">更换</button><button data-widget-delete="${w.id}">删除</button></div>
+ <input type="file" accept="image/*" hidden data-widget-file="${w.id}">
+ </div>`).join(''):'<div class="empty">还没有小组件，点右上角 ＋ 添加。</div>';
+}
+function openWidgets(){
+ $('#homeScreen').style.display='none';
+ $$('.app-screen').forEach(x=>x.classList.remove('active'));
+ $('#app-widgets').classList.add('active');
+ renderWidgetSettings();
+}
+function addWidget(){
+ widgets.push({id:uid(),image:''});saveWidgets();renderWidgetsAll();
+}
+function renderWidgetsAll(){renderDesktopWidgets();renderWidgetSettings()}
+function bindWidgets(){
+ $('#addWidget').onclick=addWidget;
+ $('#widgetHome').onclick=goHome;
+ document.addEventListener('click',e=>{
+   const w=e.target.closest('[data-widget-id]');
+   if(w){
+     const input=document.createElement('input');input.type='file';input.accept='image/*';input.hidden=true;
+     input.onchange=async()=>{if(input.files[0]){const item=widgets.find(x=>x.id===w.dataset.widgetId);if(item){item.image=await readImage(input.files[0]);saveWidgets();renderWidgetsAll();toast('小组件图片已更换')}}};
+     document.body.appendChild(input);input.click();
+   }
+   const ch=e.target.closest('[data-widget-change]');
+   if(ch){document.querySelector(`[data-widget-file="${ch.dataset.widgetChange}"]`)?.click()}
+   const del=e.target.closest('[data-widget-delete]');
+   if(del){widgets=widgets.filter(x=>x.id!==del.dataset.widgetDelete);saveWidgets();renderWidgetsAll();toast('小组件已删除')}
+ });
+ document.addEventListener('change',async e=>{
+   const input=e.target.closest('[data-widget-file]');
+   if(input?.files?.[0]){
+     const item=widgets.find(x=>x.id===input.dataset.widgetFile);
+     if(item){item.image=await readImage(input.files[0]);saveWidgets();renderWidgetsAll();toast('小组件图片已更换')}
+   }
+ });
+}
+
 function openBeautify(){
  $('#homeScreen').style.display='none';
  $$('.app-screen').forEach(x=>x.classList.remove('active'));
@@ -522,40 +457,26 @@ function openBeautify(){
  renderIconSettings();
 }
 function bindBeautify(){
- document.querySelectorAll('[data-open-app="beautify"]').forEach(x=>x.onclick=openBeautify);
  document.addEventListener('change',async e=>{
-  const input=e.target.closest('[data-icon-file]');
-  if(input?.files?.[0]){
-   const file=input.files[0];
-   const url=await readImage(file);
-   theme.icons[input.dataset.iconFile]=url;
-   saveTheme();applyTheme();renderIconSettings();toast('图标已更换');
-  }
+   const icon=e.target.closest('[data-icon-file]');
+   if(icon?.files?.[0]){
+     theme.icons[icon.dataset.iconFile]=await readImage(icon.files[0]);
+     saveTheme();applyTheme();renderIconSettings();toast('图标已更换');
+   }
+   if(e.target.id==='wallpaperFile'&&e.target.files?.[0]){
+     theme.wallpaper=await readImage(e.target.files[0]);
+     saveTheme();applyTheme();toast('桌面壁纸已更换');
+   }
  });
- $('#wallpaperFile')?.addEventListener('change',async e=>{
-  const file=e.target.files?.[0];if(!file)return;
-  theme.wallpaper=await readImage(file);saveTheme();applyTheme();toast('壁纸已更换');
- });
- $('#clearWallpaper')?.addEventListener('click',()=>{
-  theme.wallpaper='';saveTheme();applyTheme();toast('已恢复默认壁纸');
- });
- $('#resetTheme')?.addEventListener('click',()=>{
-  theme.wallpaper='';theme.icons={};saveTheme();applyTheme();renderIconSettings();toast('已恢复默认美化');
- });
+ $('#clearWallpaper').onclick=()=>{theme.wallpaper='';saveTheme();applyTheme();toast('已恢复默认壁纸')};
+ $('#resetTheme').onclick=()=>{theme.wallpaper='';theme.icons={};saveTheme();applyTheme();renderIconSettings();toast('已恢复默认美化')};
  document.addEventListener('click',e=>{
-  const b=e.target.closest('[data-clear-icon]');
-  if(b){delete theme.icons[b.dataset.clearIcon];saveTheme();applyTheme();renderIconSettings();toast('图标已恢复')}
+   const b=e.target.closest('[data-clear-icon]');
+   if(b){delete theme.icons[b.dataset.clearIcon];saveTheme();applyTheme();renderIconSettings();toast('图标已恢复')}
  });
- $$('[data-beautify-home]').forEach(x=>x.onclick=goHome);
+ document.querySelector('[data-beautify-home]').onclick=goHome;
 }
-function readImage(file){
- return new Promise((resolve,reject)=>{
-  const r=new FileReader;
-  r.onload=()=>resolve(r.result);
-  r.onerror=reject;
-  r.readAsDataURL(file);
- });
-}
+
 
 const K='miniPhone_v1';
 const state=JSON.parse(localStorage.getItem(K)||'null')||{apis:[],currentApi:null,chars:[],worlds:[],stickers:[],chats:{}};
@@ -580,23 +501,6 @@ function worldForm(w={}){openModal(`<h2>${w.id?'编辑':'添加'} 世界书</h2>
 function openChat(id){let c=state.chars.find(x=>x.id===id);if(!c)return;window.currentChar=c;$('#chatName').textContent=c.name;$('#chatRemark').textContent=c.remark||'';$('#chatAvatar').innerHTML=c.avatar?`<img src="${c.avatar}">`:'◌';renderMessages();$('#chatWindow').classList.add('active')}
 function renderMessages(){let arr=state.chats[window.currentChar.id]||[];$('#messages').innerHTML=arr.map(m=>`<div class="msg ${m.role==='user'?'me':''}"><div class="bubble">${m.parts?m.parts.map(p=>p.type==='sticker'?`<img class="sticker" src="${p.url}">`:esc(p.text)).join(''):esc(m.text)}</div></div>`).join('');$('#messages').scrollTop=999999}
 async function sendResponse(){let input=$('#chatInput'),text=input.value.trim();if(!text)return;let c=window.currentChar;state.chats[c.id]??=[];state.chats[c.id].push({role:'user',text});input.value='';renderMessages();save();if(!activeApi()){toast('先配置 API');return}try{let history=state.chats[c.id].slice(-30).map(x=>({role:x.role==='user'?'user':'assistant',content:x.text||x.parts?.map(p=>p.text||'').join('')||''})),reply=await callAPI(c,history);state.chats[c.id].push({role:'assistant',parts:parseAI(reply),text:reply});save();renderMessages()}catch(e){state.chats[c.id].push({role:'assistant',text:'[请求失败] '+e.message});save();renderMessages();toast(e.message||'请求失败')}}
-document.addEventListener('click',e=>{
-  const tab=e.target.closest('.tab[data-page]');
-  if(tab){
-    const page=tab.dataset.page;
-    $$('.page').forEach(x=>x.classList.remove('active'));
-    $('#page-'+page).classList.add('active');
-    $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
-    $('#headerTitle').textContent=page==='chat'?'微信':page==='moments'?'朋友圈':'我的';
-    $('#headerAction').textContent=page==='chat'?'＋':'';
-    if(page==='chat')renderChats();
-    return;
-  }
-  const jump=e.target.closest('[data-page-jump]');
-  if(jump){
-    openApp(jump.dataset.pageJump);
-  }
-});
 $('#headerAction').onclick=()=>{$('#headerTitle').textContent==='微信'&&charForm()}
 $('#backChat').onclick=()=>$('#chatWindow').classList.remove('active');
 $('#plusBtn').onclick=()=>$('#toolbar').style.display=$('#toolbar').style.display==='flex'?'none':'flex';
@@ -629,8 +533,8 @@ function goHome(){
 $('#chatWindow').classList.remove('active');
 $$('.app-screen').forEach(x=>x.classList.remove('active'));
 $('#appScreen').classList.remove('active');
-$('#homeScreen').style.display='flex';
-if(typeof showDesktopPage==='function')showDesktopPage(0);
+ $('#homeScreen').style.display='flex';
+ if(typeof showDesktopPage==='function')showDesktopPage(0);
 }
 $$('[data-open-app]').forEach(x=>x.onclick=()=>openApp(x.dataset.openApp));
 $('#homeBack').onclick=goHome;
@@ -644,24 +548,15 @@ $('#homeDate').textContent=now.toLocaleDateString('zh-CN',{weekday:'long',month:
 }
 updateClock();
 setInterval(updateClock,1000);
-renderChats();renderSettings();renderWorlds();applyTheme();
+renderChats();renderSettings();renderWorlds();applyTheme();bindWidgets();bindBeautify();renderWidgetsAll();
 
-const desktopPages=$$('.desktop-page'),pageDots=$$('.page-dot');
-let currentPage=0,touchX=0;
-function showDesktopPage(n){
- currentPage=Math.max(0,Math.min(desktopPages.length-1,n));
- desktopPages.forEach((p,i)=>p.classList.toggle('active',i===currentPage));
- pageDots.forEach((d,i)=>d.classList.toggle('active',i===currentPage));
-}
-pageDots.forEach(d=>d.addEventListener('click',()=>showDesktopPage(+d.dataset.pageDot)));
-$('#homeScreen').addEventListener('touchstart',e=>{touchX=e.touches[0].clientX},{passive:true});
-$('#homeScreen').addEventListener('touchend',e=>{
- const dx=e.changedTouches[0].clientX-touchX;
- if(Math.abs(dx)>45)showDesktopPage(currentPage+(dx<0?1:-1));
-},{passive:true});
-renderWidgets();
-bindWidgets();
-bindBeautify();
+const desktopPages=$$('.desktop-page'),pageDots=$$('.page-dot'),desktopSlider=$('#desktopPages');let currentPage=0,touchX=0,touchY=0,moved=false;
+function showDesktopPage(n){currentPage=Math.max(0,Math.min(desktopPages.length-1,n));desktopSlider.style.transform=`translate3d(${-currentPage*33.333333}%,0,0)`;pageDots.forEach((d,i)=>d.classList.toggle('active',i===currentPage))}
+pageDots.forEach(d=>d.onclick=()=>showDesktopPage(+d.dataset.pageDot));
+$('#homeScreen').addEventListener('touchstart',e=>{const t=e.touches[0];touchX=t.clientX;touchY=t.clientY;moved=false},{passive:true});
+$('#homeScreen').addEventListener('touchmove',e=>{const t=e.touches[0];if(Math.abs(t.clientX-touchX)>10&&Math.abs(t.clientX-touchX)>Math.abs(t.clientY-touchY)){moved=true;e.preventDefault()}},{passive:false});
+$('#homeScreen').addEventListener('touchend',e=>{if(!moved)return;const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>45)showDesktopPage(currentPage+(dx<0?1:-1))},{passive:true});
+showDesktopPage(0);
 </script>
 </body>
 </html>
