@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>AI互动式小手机 · 微信聊天对象修正版</title>
+<style>
+:root{--bg:#f3f1ee;--card:#fff;--ink:#3f403e;--muted:#8b8c88;--line:#e5e2de;--accent:#777e72;--accent2:#d8ddd1}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none}body{position:fixed;inset:0;background:#dcd9d4;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC",sans-serif}
+#phone{width:min(430px,100vw);height:100vh;height:100dvh;min-height:0;margin:auto;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;position:fixed;inset:0;overscroll-behavior:none;box-shadow:0 12px 35px #0002}
+.status{height:34px;padding:8px 16px 0;display:flex;justify-content:space-between;font-size:12px;color:#696b68}
+header{height:58px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:#f7f5f2}
+header h1{font-size:19px;margin:0;font-weight:650}.icon{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:21px}
+.icon:active,.btn:active,.tab:active,.bubble:active{transform:scale(.94);transition:.08s}
+main{flex:1;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.page{display:none;height:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.page.active{display:block}
+.bottom{height:68px;display:flex;background:#f8f7f4;border-top:1px solid var(--line);padding-bottom:max(4px,env(safe-area-inset-bottom))}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:#92938f}.tab.active{color:#555b52}.tab span:first-child{font-size:20px}
+.list{padding:12px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px;box-shadow:0 4px 18px #0001}
+.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.grow{flex:1}.muted{color:var(--muted);font-size:12px}.title{font-weight:650}.small{font-size:13px}
+.avatar{width:45px;height:45px;border-radius:14px;background:var(--accent2);display:grid;place-items:center;font-size:20px;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}
+.btn{padding:9px 13px;border-radius:12px;background:#e7e9e2}.btn.primary{background:var(--accent);color:#fff}.btn.danger{background:#f1dfdf;color:#985d5d}.btn.ghost{background:#f4f2ef}
+input,textarea,select{width:100%;border:1px solid var(--line);background:#faf9f7;border-radius:12px;padding:10px 11px;outline:none;color:var(--ink)}textarea{resize:vertical;min-height:90px}.field{margin:10px 0}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+@media(max-width:600px){input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),textarea,select{font-size:16px}}
+.pill{font-size:11px;padding:4px 8px;border-radius:99px;background:#eceee9}
+.empty{text-align:center;color:var(--muted);padding:45px 20px}.section{padding:15px 14px 5px;font-size:13px;color:#777}
+.chat-list{padding:0}.chat-item{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;gap:11px}.chat-item .preview{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-size:12px;margin-top:4px}
+.chat-window{display:none;position:absolute;inset:34px 0 0;background:var(--bg);z-index:5;flex-direction:column}.chat-window.active{display:flex}
+.chat-top{height:58px;background:#f7f5f2;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:8px 10px;gap:8px}
+.chat-head{display:flex;align-items:center;gap:10px}.messages{flex:1;overflow:auto;padding:14px}.msg{display:flex;align-items:flex-start;gap:8px;margin:8px 0}.msg.me{justify-content:flex-end}
+#messages,.sheet,.home-main{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.bubble{max-width:calc(78% - 40px);padding:10px 12px;border-radius:15px;background:#fff;line-height:1.5;white-space:pre-wrap;word-break:break-word}.me .bubble{background:#dce2d6}
+.message-avatar{width:32px;height:32px;flex:0 0 32px;border-radius:50%;overflow:hidden;background:#eee;color:#74766f;display:flex;align-items:center;justify-content:center;font-size:16px;user-select:none}.message-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.chat-design-preview{min-height:210px;display:flex;flex-direction:column;gap:12px;padding:12px;background:#f3f3f3;border:1px solid var(--line);border-radius:16px;overflow:hidden}.design-message{display:flex;align-items:flex-end;gap:8px}.design-message.user{justify-content:flex-end}.design-avatar{width:30px;height:30px;flex:0 0 30px;border-radius:50%;overflow:hidden;background:#e4e4e4;display:flex;align-items:center;justify-content:center;font-size:14px}.design-avatar img{width:100%;height:100%;object-fit:cover}.design-bubble{position:relative;box-sizing:border-box;line-height:1.5;white-space:pre-wrap;word-break:break-word}.design-bubble.tail::before{content:"";position:absolute;top:12px;border:6px solid transparent}.design-message.char .design-bubble.tail::before{left:-11px;border-right-color:var(--tail-color)}.design-message.user .design-bubble.tail::before{right:-11px;border-left-color:var(--tail-color)}.design-time{font-size:10px;color:#888;white-space:nowrap;align-self:flex-end}
+.withdrawn{color:#888;font-size:12px;user-select:none}
+.typing-bubble{color:#858585;font-size:13px;animation:typingFade 1.15s ease-in-out infinite alternate}
+@keyframes typingFade{from{opacity:.55}to{opacity:1}}
+.sticker{max-width:120px;max-height:120px;border-radius:10px}.voice{display:inline-flex;align-items:center;gap:8px}
+.chat-input{padding:8px;background:#f5f3ef;border-top:1px solid var(--line)}.chat-input textarea{min-height:42px;max-height:100px;resize:none}
+.input-row{display:flex;gap:7px;align-items:end}.plus{width:42px;height:42px;border-radius:12px;background:#e4e2dd}.response{height:42px;background:var(--accent);color:white;border-radius:12px;padding:0 14px}
+.toolbar{display:none;padding:8px;gap:8px;flex-wrap:wrap}.toolbox{background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px;font-size:12px}.toolbox input{font-size:12px;padding:7px}
+.modal{position:absolute;inset:0;background:#0005;display:none;align-items:flex-end;z-index:10}.modal.active{display:flex}.sheet{width:100%;max-height:88%;overflow:auto;background:#f7f5f2;border-radius:22px 22px 0 0;padding:16px}.sheet h2{margin:0 0 12px;font-size:18px}
+.check{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid var(--line);border-radius:12px;margin:7px 0;background:#fff}.check input{width:auto}
+.toast{position:absolute;left:50%;bottom:82px;transform:translateX(-50%) translateY(20px);background:#454943;color:#fff;padding:9px 13px;border-radius:12px;font-size:12px;opacity:0;pointer-events:none;transition:.25s;z-index:30}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.home-screen{position:absolute;inset:34px 0 0;display:flex;flex-direction:column;background:radial-gradient(circle at 18% 15%,#ffffffb8 0 3%,transparent 20%),radial-gradient(circle at 88% 30%,#d8ddd180 0 5%,transparent 25%),linear-gradient(145deg,#f4f1ed,#e4e0da);z-index:2}
+.home-main{flex:1;overflow:auto;padding:24px 18px 12px}
+.home-time{font-size:55px;font-weight:300;letter-spacing:-2px;line-height:1;margin:8px 5px 5px}
+.home-date{font-size:13px;color:var(--muted);margin:0 6px 30px}
+.app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px 10px}
+.app-icon-wrap,.dock-item{border:0;background:transparent;padding:0;color:inherit;font:inherit;cursor:pointer;text-align:center}
+.app-icon{width:62px;height:62px;margin:auto;border-radius:20px;display:grid;place-items:center;background:linear-gradient(145deg,#ffffffd9,#e8e5dfd9);border:1px solid #fff;box-shadow:0 8px 18px #00000012,inset 0 1px #fff;font-size:27px;color:#626760}
+.app-label{display:block;font-size:11px;margin-top:7px;color:#555852}
+.dock{margin:0 12px 12px;min-height:76px;padding:9px 10px;border-radius:25px;display:flex;align-items:center;justify-content:space-around;gap:10px;background:#ffffff96;border:1px solid #ffffffaa;box-shadow:0 10px 30px #00000012,inset 0 1px #fff;backdrop-filter:blur(16px)}
+.dock-item{min-width:62px;font-size:9px;color:#72746f}
+.dock-icon{display:grid;place-items:center;width:49px;height:49px;margin:auto;border-radius:16px;background:#f4f3ef;box-shadow:0 5px 12px #00000010;font-size:22px;color:#60645e}
+.app-screen{position:absolute;inset:34px 0 0;display:none;flex-direction:column;background:var(--bg);z-index:3}
+.app-screen.active{display:flex}
+.home-back{background:#eceae5}
+.home-screen button:active,.dock-item:active,.app-icon-wrap:active{transform:scale(.94);transition:.08s}
+
+/* minimal-monochrome */
+
+/* 黑白灰极简版：不显示网页状态栏，保留真正的手机桌面结构 */
+:root{
+  --bg:#f5f5f5;--card:#fff;--ink:#202020;--muted:#8a8a8a;
+  --line:#e3e3e3;--accent:#222;--accent2:#eeeeee;
+}
+html,body{background:#d8d8d8}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC",sans-serif}
+#phone{
+  background:#f5f5f5;
+  box-shadow:0 18px 55px #00000022;
+}
+#phone:before{display:none}
+.status{display:none}
+
+header{
+  height:64px;padding:10px 18px;
+  background:#f7f7f7;border-bottom:1px solid #dedede;
+}
+header h1{font-size:20px;font-weight:650;color:#222}
+.icon{
+  width:38px;height:38px;border-radius:13px;
+  background:#fff;border:1px solid #dedede;
+  color:#222;box-shadow:0 3px 10px #0000000b;
+}
+.icon:active,.btn:active,.tab:active,.bubble:active,
+.app-icon-wrap:active,.dock-item:active{
+  transform:scale(.94);transition:.1s cubic-bezier(.34,1.56,.64,1);
+}
+
+main{background:#f5f5f5}
+.page{padding-top:2px}
+.bottom{
+  height:72px;padding:6px 8px max(6px,env(safe-area-inset-bottom));
+  gap:4px;background:#fafafa;border-top:1px solid #ddd;
+}
+.tab{
+  border-radius:16px;color:#999;background:transparent;
+}
+.tab.active{
+  color:#222;background:#ededed;
+  box-shadow:inset 0 1px #fff;
+}
+.tab span:first-child{font-size:20px}
+
+.card{
+  background:#fff;border:1px solid #e2e2e2;border-radius:16px;
+  box-shadow:0 5px 18px #00000009;
+}
+.btn{
+  background:#f0f0f0;border:1px solid #ddd;color:#222;
+  box-shadow:0 3px 9px #00000008;
+}
+.btn.primary{
+  background:#222;color:#fff;border-color:#222;
+}
+.btn.danger{background:#f3eeee;color:#777;border-color:#e5dada}
+
+input,textarea,select{
+  background:#fafafa;border:1px solid #ddd;color:#222;
+}
+.pill{background:#ededed;color:#666}
+.empty{color:#999}
+.section{color:#777}
+.chat-item{
+  background:#f8f8f8;border-bottom:1px solid #e5e5e5;
+}
+.avatar{
+  background:#ededed;border:1px solid #ddd;
+  box-shadow:none;color:#555;
+}
+.home-screen{
+  inset:0;
+  background:
+    radial-gradient(circle at 80% 18%,#fff 0 2%,transparent 18%),
+    linear-gradient(145deg,#fafafa,#e7e7e7);
+}
+.home-main{padding:38px 22px 14px}
+.home-main:before{
+  content:"AI INTERACTIVE PHONE";
+  display:block;font-size:10px;font-weight:600;
+  letter-spacing:2px;color:#999;margin:0 4px 12px;
+}
+.home-time{
+  font-size:58px;font-weight:250;letter-spacing:-3px;
+  color:#1f1f1f;
+}
+.home-date{
+  color:#888;margin-bottom:38px;
+}
+.app-grid{grid-template-columns:repeat(4,1fr);gap:30px 8px}
+.app-icon{
+  width:62px;height:62px;border-radius:19px;
+  background:#fff;border:1px solid #ddd;
+  box-shadow:0 7px 18px #00000010;
+  color:#333;font-size:25px;
+}
+.app-icon-wrap:nth-child(1) .app-icon,
+.app-icon-wrap:nth-child(2) .app-icon,
+.app-icon-wrap:nth-child(3) .app-icon{
+  background:#fff;color:#333;
+}
+.app-label{
+  color:#555;font-weight:550;
+}
+.dock{
+  margin:0 14px 14px;min-height:78px;padding:8px 12px;
+  border-radius:25px;background:#ffffffbb;
+  border:1px solid #fff;
+  box-shadow:0 10px 28px #00000012;
+  backdrop-filter:blur(16px);
+}
+.dock-item{color:#666}
+.dock-icon{
+  width:49px;height:49px;border-radius:16px;
+  background:#f1f1f1;border:1px solid #ddd;
+  box-shadow:none;color:#333;
+}
+.app-screen{
+  inset:0;
+  background:#f5f5f5;
+}
+.app-screen header{background:#f7f7f7}
+.home-back{background:#fff}
+
+.chat-window{
+  inset:0;
+  background:#f5f5f5;
+}
+.chat-top{
+  height:64px;background:#f7f7f7;
+  border-bottom:1px solid #ddd;
+}
+.messages{padding:16px}
+.bubble{
+  background:#fff;border:1px solid #ddd;
+  box-shadow:0 3px 10px #00000008;
+}
+.me .bubble{
+  background:#e4e4e4;
+}
+.chat-input{
+  padding:9px;background:#f3f3f3;
+  border-top:1px solid #ddd;
+}
+.chat-input textarea{background:#fff}
+.plus{
+  background:#fff;border:1px solid #ddd;color:#333;
+}
+.response{
+  background:#222;color:#fff;border:1px solid #222;
+}
+.toolbox{
+  background:#fff;border:1px solid #ddd;color:#444;
+}
+.modal{background:#00000055}
+.sheet{
+  background:#f7f7f7;border:1px solid #ddd;
+  box-shadow:0 -12px 35px #00000015;
+}
+.toast{background:#222;color:#fff}
+
+/* customize-style */
+
+#homeScreen.custom-wallpaper{background-size:cover;background-position:center;background-repeat:no-repeat}
+#homeScreen.custom-wallpaper:after{content:"";position:absolute;inset:0;background:#0000;pointer-events:none}
+#homeScreen.custom-wallpaper .home-main{position:relative;z-index:1}
+.icon-setting{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #e5e5e5}
+.icon-setting:last-child{border-bottom:0}
+.icon-preview{width:46px;height:46px;border-radius:14px;overflow:hidden;display:grid;place-items:center;background:#eee;border:1px solid #ddd;font-size:21px;flex:none}
+.icon-preview img{width:100%;height:100%;object-fit:cover}
+.app-icon img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.icon-setting .name{flex:1;font-size:13px;font-weight:600}
+.icon-actions{display:flex;gap:6px}
+.icon-actions label{cursor:pointer}
+</style>
+<style id="desktop-pages-style">
+.home-screen{overflow:hidden}
+.desktop-pages{position:absolute;inset:0;width:300%;display:flex;transition:transform .28s cubic-bezier(.22,.8,.22,1);touch-action:pan-y}
+.desktop-page{position:relative;flex:0 0 33.333333%;width:33.333333%;height:100%;overflow:hidden}
+.desktop-page .home-main{height:calc(100% - 100px)}
+.desktop-widget-grid{height:100%;padding:48px 18px 120px;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:max-content;gap:16px 10px;align-content:start}
+.desktop-widget{grid-column:span 2;grid-row:span 2;aspect-ratio:1;border:1px solid #ddd;border-radius:22px;background:#f7f7f7;overflow:hidden;padding:0;box-shadow:0 8px 24px #0000000d}
+.desktop-widget img{width:100%;height:100%;object-fit:cover;display:block}
+.desktop-widget-empty{width:100%;height:100%;display:grid;place-items:center;color:#999;font-size:12px}
+.page-dots{position:absolute;left:0;right:0;bottom:84px;z-index:20;display:flex;justify-content:center;gap:7px}
+.page-dot{width:6px;height:6px;padding:0;border:0;border-radius:50%;background:#c5c5c5}
+.page-dot.active{background:#222}
+.desktop-page-placeholder{height:100%;display:grid;place-items:center;text-align:center;color:#999;font-size:13px;line-height:1.8}
+.desktop-page-placeholder span{font-size:11px}
+#app-widgets .widget-row{display:grid;grid-template-columns:58px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
+#app-widgets .widget-preview{width:58px;height:58px;border-radius:14px;background:#f3f3f3;overflow:hidden;display:grid;place-items:center;color:#999}
+#app-widgets .widget-preview img{width:100%;height:100%;object-fit:cover}
+#app-widgets .widget-actions{display:flex;gap:6px}
+#app-widgets .widget-actions button{border:1px solid #ddd;background:#fff;border-radius:10px;padding:7px 9px}
+#app-widgets .widget-home{border:1px solid #ddd;background:#fff;border-radius:10px;padding:8px 12px}
+</style>
+<style id="desktop-fix-style">
+.home-screen{overflow:hidden}
+.desktop-pages{inset:0 0 96px;width:300%;height:auto}
+.desktop-page{height:100%}
+.desktop-page .home-main{height:100%;padding-bottom:24px}
+.desktop-dock{position:absolute;left:14px;right:14px;bottom:14px;margin:0;z-index:25}
+.page-dots{bottom:99px;z-index:26}
+</style>
+<style id="wallpaper-dock-fix">
+/* 壁纸不改变 Dock 的定位：Dock 始终固定在桌面底部 */
+#homeScreen.custom-wallpaper .desktop-dock{position:absolute;left:14px;right:14px;bottom:14px;margin:0;z-index:25}
+#homeScreen.custom-wallpaper .page-dots{position:absolute;left:0;right:0;bottom:99px;z-index:26}
+</style>
+</head>
+<body>
+<div id="phone">
+
+<section id="homeScreen" class="home-screen">
+<div id="desktopPages" class="desktop-pages">
+  <section class="desktop-page active" data-page="0">
+    <div class="home-main">
+      <div class="home-time" id="homeTime">12:00</div>
+      <div class="home-date" id="homeDate">星期四 · 9月24日</div>
+      <div class="app-grid">
+        <button class="app-icon-wrap" data-open-app="chat"><span class="app-icon">◔</span><span class="app-label">微信</span></button>
+        <button class="app-icon-wrap" data-open-app="world"><span class="app-icon">▦</span><span class="app-label">世界书</span></button>
+        <button class="app-icon-wrap" data-open-app="settings"><span class="app-icon">⚙</span><span class="app-label">设置</span></button>
+        <button class="app-icon-wrap" data-open-app="beautify"><span class="app-icon">✦</span><span class="app-label">美化</span></button>
+        <button class="app-icon-wrap" data-open-app="widgets"><span class="app-icon">▣</span><span class="app-label">小组件</span></button>
+      </div>
+    </div>
+  </section>
+  <section class="desktop-page" data-page="1">
+    <div class="desktop-widget-grid" id="widgetDesktopGrid"></div>
+  </section>
+  <section class="desktop-page" data-page="2">
+    <div class="desktop-page-placeholder">第三页<br><span>以后继续往这里塞 App</span></div>
+  </section>
+</div>
+<div class="dock desktop-dock">
+  <button class="dock-item" data-open-app="chat"><span class="dock-icon">◔</span><span>微信</span></button>
+  <button class="dock-item" data-open-app="world"><span class="dock-icon">▦</span><span>世界书</span></button>
+  <button class="dock-item" data-open-app="settings"><span class="dock-icon">⚙</span><span>设置</span></button>
+</div>
+<div class="page-dots" id="pageDots">
+  <button class="page-dot active" data-page-dot="0"></button>
+  <button class="page-dot" data-page-dot="1"></button>
+  <button class="page-dot" data-page-dot="2"></button>
+</div>
+</section>
+
+<section id="appScreen" class="app-screen">
+<header><button class="icon home-back" id="homeBack">⌂</button><h1 id="headerTitle">微信</h1><button class="icon" id="headerAction">＋</button></header>
+<main>
+<section id="page-chat" class="page active"><div id="chatList" class="chat-list"></div></section>
+<section id="page-moments" class="page"><div class="list"><div class="card"><div class="title">朋友圈</div><div class="muted" style="margin-top:6px">这里以后放朋友圈内容。</div></div></div></section>
+<section id="page-me" class="page"><div class="list" id="meProfile"></div></section>
+<section id="page-settings" class="page"><div class="list" id="settingsList"></div></section>
+<section id="page-world" class="page"><div class="list" id="worldList"></div></section>
+</main>
+<nav class="bottom">
+<button class="tab active" data-page="chat"><span>◔</span><span>聊天</span></button>
+<button class="tab" data-page="moments"><span>◎</span><span>朋友圈</span></button>
+<button class="tab" data-page="me"><span>♙</span><span>我的</span></button>
+</nav>
+</section>
+
+
+<section id="app-widgets" class="app-screen">
+<header><button class="icon home-back" id="widgetHome">⌂</button><h1>小组件</h1><button class="icon" id="addWidget">＋</button></header>
+<main>
+<div class="list">
+<div class="card">
+<div class="title">桌面小组件</div>
+<div class="muted" style="margin:6px 0 12px">添加后会出现在桌面第二页。点击桌面上的小组件可以重新上传图片。</div>
+<div id="widgetSettingsList"></div>
+</div>
+</div>
+</main>
+</section>
+<section id="app-beautify" class="app-screen">
+<header><button class="icon home-back" data-beautify-home>⌂</button><h1>美化</h1><button class="icon" id="resetTheme">↺</button></header>
+<main id="beautifyMain">
+<div class="list">
+<div class="card">
+<div class="title">桌面壁纸</div>
+<div class="muted" style="margin:6px 0 10px">上传一张图片作为桌面背景，只保存在这台浏览器里。</div>
+<div class="row">
+<label class="btn primary grow" style="text-align:center;cursor:pointer">选择壁纸
+<input id="wallpaperFile" type="file" accept="image/*" hidden>
+</label>
+<button class="btn" id="clearWallpaper">清除</button>
+</div>
+</div>
+
+<div class="card">
+<div class="title">App 图标</div>
+<div class="muted" style="margin:6px 0 12px">可以给桌面上的 App 换成你自己的图片。</div>
+<div id="iconSettings"></div>
+</div>
+
+<div class="card" id="chatAppearanceCategory">
+<div class="row between"><div><div class="title">聊天界面</div><div class="muted" style="margin:6px 0 10px">设计短信气泡、头像与时间显示，并预览效果。</div></div><button class="btn primary" id="openChatDesigner">开始设计</button></div>
+</div>
+
+<div class="card">
+<div class="title">当前主题</div>
+<div class="muted" id="themeInfo">黑白简约</div>
+</div>
+</div>
+</main>
+<main id="chatAppearanceEditor" style="display:none">
+<div class="list">
+<div class="row" style="margin-bottom:10px"><button class="btn" id="backToBeautify">‹ 返回美化</button><div class="title grow" style="text-align:center">聊天界面设计</div><span style="width:90px"></span></div>
+<div class="card"><div class="title">实时预览</div><div class="muted" style="margin:5px 0 10px">预览会读取当前用户和角色头像。</div><div id="chatDesignPreview" class="chat-design-preview"></div></div>
+<div class="card"><div class="title">我的气泡</div><div class="field"><label>气泡颜色</label><input id="designUserColor" type="color" value="#e4e4e4"></div><div class="field"><label>文字颜色</label><input id="designUserTextColor" type="color" value="#202020"></div><label class="check"><input id="designUserTail" type="checkbox" checked>显示小尾巴</label></div>
+<div class="card"><div class="title">角色气泡</div><div class="field"><label>气泡颜色</label><input id="designCharColor" type="color" value="#ffffff"></div><div class="field"><label>文字颜色</label><input id="designCharTextColor" type="color" value="#202020"></div><label class="check"><input id="designCharTail" type="checkbox" checked>显示小尾巴</label></div>
+<div class="card"><div class="title">气泡尺寸与时间</div><div class="field"><label>气泡最大宽度 <span id="designWidthValue">78%</span></label><input id="designWidth" type="range" min="50" max="90" value="78"></div><div class="field"><label>圆角大小 <span id="designRadiusValue">16 px</span></label><input id="designRadius" type="range" min="4" max="32" value="16"></div><div class="field"><label>气泡内边距 <span id="designPaddingValue">12 px</span></label><input id="designPadding" type="range" min="6" max="24" value="12"></div><label class="check"><input id="designShowTime" type="checkbox" checked>在气泡旁显示发送时间</label></div>
+<div class="card"><div class="title">头像显示</div><div class="field"><label for="designAvatarShape">头像形状</label><select id="designAvatarShape"><option value="circle">圆形</option><option value="rounded">圆角</option><option value="square">方形</option></select></div><div class="muted">设置会同时应用于用户和角色头像，并写入下方生成的样式代码。</div></div>
+<div class="card"><div class="title">生成的样式代码</div><div class="muted" style="margin:5px 0 10px">复制后可用于当前聊天界面的 .msg / .bubble 样式。</div><textarea id="generatedChatCss" readonly rows="18" style="font-family:ui-monospace,Consolas,monospace;font-size:11px;white-space:pre;overflow:auto"></textarea><button class="btn primary" id="copyChatCss" style="width:100%;margin-top:8px">复制代码</button></div>
+</div>
+</main>
+</section>
+
+<div id="chatWindow" class="chat-window">
+<div class="chat-top"><button class="icon" id="backChat">‹</button><div class="chat-head grow"><div class="avatar" id="chatAvatar">◌</div><div><div class="title" id="chatName">角色</div><div class="muted" id="chatRemark"></div></div></div><button class="icon" id="editChar">⋯</button></div>
+<div class="messages" id="messages"></div>
+<div class="chat-input">
+<div class="toolbar" id="toolbar"><button class="toolbox" id="voiceBtn">模拟语音</button><button class="toolbox" id="stickerBtn">表情包</button><button class="toolbox" id="rerollBtn">重roll回复</button><input id="stickerFile" type="file" accept="image/*" multiple hidden></div>
+<div class="input-row"><button class="plus" id="plusBtn">＋</button><textarea id="chatInput" rows="1" placeholder="输入消息…"></textarea><button class="response" id="responseBtn" aria-label="让角色回复" title="让角色回复">➤</button></div>
+</div></div>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div><div class="toast" id="toast"></div>
+</div>
+
+<script>
+// 手机端保持模拟手机的固定比例，阻止浏览器手势缩放。
+document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+document.addEventListener('touchmove',e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
+
+const THEME_K='miniPhone_theme_v1';
+const theme=JSON.parse(localStorage.getItem(THEME_K)||'null')||{wallpaper:'',icons:{}};
+const APP_META={
+ chat:{name:'微信',symbol:'◔'},
+ world:{name:'世界书',symbol:'▦'},
+ settings:{name:'设置',symbol:'⚙'},
+ beautify:{name:'美化',symbol:'✦'},
+ widgets:{name:'小组件',symbol:'▣'}
+};
+function saveTheme(){try{localStorage.setItem(THEME_K,JSON.stringify(theme));return true}catch(e){toast('图片太大，无法保存，请换一张小一点的图片');return false}}
+function applyTheme(){
+ const home=$('#homeScreen');
+ if(theme.wallpaper){
+  home.classList.add('custom-wallpaper');
+  home.style.backgroundImage=`url("${theme.wallpaper}")`;
+ }else{
+  home.classList.remove('custom-wallpaper');
+  home.style.backgroundImage='';
+ }
+ $$('[data-open-app]').forEach(el=>{
+  const app=el.dataset.openApp, icon=el.querySelector('.app-icon'), custom=theme.icons[app];
+  if(!icon)return;
+  icon.innerHTML=custom?`<img src="${custom}" alt="">`:APP_META[app]?.symbol||'';
+ });
+}
+function renderIconSettings(){
+ const box=$('#iconSettings');
+ if(!box)return;
+ box.innerHTML=Object.entries(APP_META).map(([id,a])=>{
+  const custom=theme.icons[id];
+  return `<div class="icon-setting">
+   <div class="icon-preview">${custom?`<img src="${custom}" alt="">`:a.symbol}</div>
+   <div class="name">${a.name}</div>
+   <div class="icon-actions">
+    <label class="btn">更换<input type="file" accept="image/*" hidden data-icon-file="${id}"></label>
+    ${custom?`<button class="btn" data-clear-icon="${id}">恢复</button>`:''}
+   </div>
+  </div>`;
+ }).join('');
+}
+
+const WIDGET_K='miniPhone_widgets_v2';
+let widgets=JSON.parse(localStorage.getItem(WIDGET_K)||'[]');
+if(!Array.isArray(widgets))widgets=[];
+function saveWidgets(){localStorage.setItem(WIDGET_K,JSON.stringify(widgets))}
+function readImage(file){
+ return new Promise((resolve,reject)=>{
+  const reader=new FileReader();
+  reader.onerror=reject;
+  reader.onload=()=>{
+   const img=new Image();
+   img.onload=()=>{
+    const max=1400,scale=Math.min(1,max/Math.max(img.width,img.height));
+    const c=document.createElement('canvas');
+    c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));
+    const ctx=c.getContext('2d');ctx.drawImage(img,0,0,c.width,c.height);
+    resolve(c.toDataURL('image/jpeg',.82));
+   };
+   img.onerror=()=>resolve(reader.result);
+   img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+ });
+}
+function renderDesktopWidgets(){
+ const box=$('#widgetDesktopGrid');if(!box)return;
+ box.innerHTML=widgets.map(w=>`<button class="desktop-widget" data-widget-id="${w.id}">${w.image?`<img src="${w.image}" alt="">`:'<span class="desktop-widget-empty">点击上传图片</span>'}</button>`).join('');
+}
+function renderWidgetSettings(){
+ const box=$('#widgetSettingsList');if(!box)return;
+ box.innerHTML=widgets.length?widgets.map(w=>`<div class="widget-row">
+ <div class="widget-preview">${w.image?`<img src="${w.image}" alt="">`:'＋'}</div>
+ <div class="grow"><div class="title">小组件</div><div class="muted">桌面第二页</div></div>
+ <div class="widget-actions"><button data-widget-change="${w.id}">更换</button><button data-widget-delete="${w.id}">删除</button></div>
+ <input type="file" accept="image/*" hidden data-widget-file="${w.id}">
+ </div>`).join(''):'<div class="empty">还没有小组件，点右上角 ＋ 添加。</div>';
+}
+function openWidgets(){
+ $('#homeScreen').style.display='none';
+ $$('.app-screen').forEach(x=>x.classList.remove('active'));
+ $('#app-widgets').classList.add('active');
+ renderWidgetSettings();
+}
+function addWidget(){
+ widgets.push({id:uid(),image:''});saveWidgets();renderWidgetsAll();
+}
+function renderWidgetsAll(){renderDesktopWidgets();renderWidgetSettings()}
+function bindWidgets(){
+ $('#addWidget').onclick=addWidget;
+ $('#widgetHome').onclick=goHome;
+ document.addEventListener('click',e=>{
+   const w=e.target.closest('[data-widget-id]');
+   if(w){
+     const input=document.createElement('input');input.type='file';input.accept='image/*';input.hidden=true;
+     input.onchange=async()=>{if(input.files[0]){const item=widgets.find(x=>x.id===w.dataset.widgetId);if(item){item.image=await readImage(input.files[0]);saveWidgets();renderWidgetsAll();toast('小组件图片已更换')}}};
+     document.body.appendChild(input);input.click();
+   }
+   const ch=e.target.closest('[data-widget-change]');
+   if(ch){document.querySelector(`[data-widget-file="${ch.dataset.widgetChange}"]`)?.click()}
+   const del=e.target.closest('[data-widget-delete]');
+   if(del){widgets=widgets.filter(x=>x.id!==del.dataset.widgetDelete);saveWidgets();renderWidgetsAll();toast('小组件已删除')}
+ });
+ document.addEventListener('change',async e=>{
+   const input=e.target.closest('[data-widget-file]');
+   if(input?.files?.[0]){
+     const item=widgets.find(x=>x.id===input.dataset.widgetFile);
+     if(item){item.image=await readImage(input.files[0]);saveWidgets();renderWidgetsAll();toast('小组件图片已更换')}
+   }
+ });
+}
+
+function chatDesignValues(){return{userColor:$('#designUserColor').value,userTextColor:$('#designUserTextColor').value,userTail:$('#designUserTail').checked,charColor:$('#designCharColor').value,charTextColor:$('#designCharTextColor').value,charTail:$('#designCharTail').checked,width:Number($('#designWidth').value),radius:Number($('#designRadius').value),padding:Number($('#designPadding').value),showTime:$('#designShowTime').checked,avatarShape:$('#designAvatarShape').value}}
+function renderChatDesigner(){let d=theme.chatStyle||{userColor:'#e4e4e4',userTextColor:'#202020',userTail:true,charColor:'#ffffff',charTextColor:'#202020',charTail:true,width:78,radius:16,padding:12,showTime:true,avatarShape:"circle"};$('#designUserColor').value=d.userColor;$('#designUserTextColor').value=d.userTextColor;$('#designUserTail').checked=d.userTail;$('#designCharColor').value=d.charColor;$('#designCharTextColor').value=d.charTextColor;$('#designCharTail').checked=d.charTail;$('#designWidth').value=d.width;$('#designRadius').value=d.radius;$('#designPadding').value=d.padding;$('#designShowTime').checked=d.showTime;$('#designAvatarShape').value=d.avatarShape||'circle';updateChatDesigner()}
+function updateChatDesigner(){let d=chatDesignValues(),char=window.currentChar||state.chars[0]||{},user=state.userProfile||{},charAvatar=char.avatar?`<img src="${esc(char.avatar)}" alt="角色头像">`:'◌',userAvatar=user.avatar?`<img src="${esc(user.avatar)}" alt="用户头像">`:'♙';$('#designWidthValue').textContent=d.width+'%';$('#designRadiusValue').textContent=d.radius+' px';$('#designPaddingValue').textContent=d.padding+' px';let time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),charTail=d.charTail?' tail':'',userTail=d.userTail?' tail':'',avatarRadius=d.avatarShape==='square'?'0':d.avatarShape==='rounded'?'10px':'50%';$('#chatDesignPreview').innerHTML=`<div class="design-message char"><div class="design-avatar" style="border-radius:${avatarRadius}">${charAvatar}</div><div class="design-bubble${charTail}" style="background:${d.charColor};color:${d.charTextColor};max-width:${d.width}%;padding:${d.padding}px;border-radius:${d.radius}px;--tail-color:${d.charColor}">你好呀，今天过得怎么样？</div>${d.showTime?`<span class="design-time">${time}</span>`:''}</div><div class="design-message user">${d.showTime?`<span class="design-time">${time}</span>`:''}<div class="design-bubble${userTail}" style="background:${d.userColor};color:${d.userTextColor};max-width:${d.width}%;padding:${d.padding}px;border-radius:${d.radius}px;--tail-color:${d.userColor}">还不错，刚好想找你聊聊天</div><div class="design-avatar" style="border-radius:${avatarRadius}">${userAvatar}</div></div>`;theme.chatStyle=d;saveTheme();let tails=`.chat-window .msg:not(.me) .bubble::before,.chat-window .msg.me .bubble::before{content:none}\n`;if(d.charTail)tails+=`.chat-window .msg:not(.me) .bubble::before{content:"";display:block;position:absolute;left:-6px;top:12px;border:6px solid transparent;border-right-color:${d.charColor}}\n`;if(d.userTail)tails+=`.chat-window .msg.me .bubble::before{content:"";display:block;position:absolute;right:-6px;top:12px;border:6px solid transparent;border-left-color:${d.userColor}}\n`;let timeCss=d.showTime?`.chat-window .msg[data-time]::after{content:attr(data-time);font-size:10px;color:#888;white-space:nowrap;align-self:flex-end;padding:0 2px}\n.chat-window .msg:not(.me) .message-avatar{order:0}\n.chat-window .msg:not(.me) .bubble{order:1}\n.chat-window .msg:not(.me)::after{order:2}\n.chat-window .msg.me::after{order:0}\n.chat-window .msg.me .bubble{order:1}\n.chat-window .msg.me .message-avatar{order:2}\n`:`.chat-window .msg::after{content:none!important}\n`;$('#generatedChatCss').value=`/* 聊天界面气泡样式；粘贴到页面 <style> 中 */\n.chat-window .messages .msg{display:flex;align-items:flex-end;gap:8px}\n.chat-window .messages .msg .bubble{box-sizing:border-box;position:relative;max-width:calc(${d.width}% - 40px);padding:${d.padding}px;border-radius:${d.radius}px;line-height:1.5;white-space:pre-wrap;word-break:break-word;background:${d.charColor};color:${d.charTextColor}}\n.chat-window .messages .msg.me .bubble{background:${d.userColor};color:${d.userTextColor}}\n.message-avatar{width:32px;height:32px;flex:0 0 32px;border-radius:${avatarRadius};overflow:hidden}\n.message-avatar img{width:100%;height:100%;object-fit:cover;display:block}\n${tails}${timeCss}`;}
+function openChatDesigner(){ $('#beautifyMain').style.display='none';$('#chatAppearanceEditor').style.display='block';renderChatDesigner() }
+function closeChatDesigner(){ $('#chatAppearanceEditor').style.display='none';$('#beautifyMain').style.display='block' }
+async function copyChatDesignerCode(){let code=$('#generatedChatCss').value;try{await navigator.clipboard.writeText(code)}catch(e){let area=$('#generatedChatCss');area.focus();area.select();if(!document.execCommand('copy')){toast('复制失败，请手动选择代码复制');return}}toast('聊天气泡代码已复制')}
+function openBeautify(){
+ $('#homeScreen').style.display='none';
+ $$('.app-screen').forEach(x=>x.classList.remove('active'));
+ $('#app-beautify').classList.add('active');
+ renderIconSettings();
+}
+function bindBeautify(){
+ document.addEventListener('change',async e=>{
+   const icon=e.target.closest('[data-icon-file]');
+   if(icon?.files?.[0]){
+     theme.icons[icon.dataset.iconFile]=await readImage(icon.files[0]);
+     applyTheme();saveTheme();renderIconSettings();toast('图标已更换');
+   }
+   if(e.target.id==='wallpaperFile'&&e.target.files?.[0]){
+     theme.wallpaper=await readImage(e.target.files[0]);
+     applyTheme();saveTheme();toast('桌面壁纸已更换');
+   }
+ });
+ $('#clearWallpaper').onclick=()=>{theme.wallpaper='';applyTheme();saveTheme();toast('已恢复默认壁纸')};
+ $('#resetTheme').onclick=()=>{theme.wallpaper='';theme.icons={};applyTheme();saveTheme();renderIconSettings();toast('已恢复默认美化')};
+ $('#openChatDesigner').onclick=openChatDesigner;$('#backToBeautify').onclick=closeChatDesigner;$$('#chatAppearanceEditor input,#chatAppearanceEditor select').forEach(x=>x.addEventListener('input',updateChatDesigner));$('#copyChatCss').onclick=copyChatDesignerCode;
+ document.addEventListener('click',e=>{
+   const b=e.target.closest('[data-clear-icon]');
+   if(b){delete theme.icons[b.dataset.clearIcon];applyTheme();saveTheme();renderIconSettings();toast('图标已恢复')}
+ });
+ document.querySelector('[data-beautify-home]').onclick=goHome;
+}
+
+
+const K='miniPhone_v1';
+const state=JSON.parse(localStorage.getItem(K)||'null')||{apis:[],currentApi:null,chars:[],worlds:[],stickers:[],chats:{}};state.userProfile??={};
+const save=()=>{const raw=JSON.stringify(state);localStorage.setItem(K,raw);};
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function toast(t){let x=$('#toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1800)}
+function apiBase(url){let u=(url||'').trim().replace(/\/+$/,'');if(!u)return '';if(!/\/v1$/i.test(u))u+='/v1';return u}
+function activeApi(){return state.apis.find(x=>x.id===state.currentApi)||state.apis[0]}
+function activeWorlds(ch){return state.worlds.filter(w=>w.scope==='global'||(ch?.boundWorldBookIds||[]).includes(w.id))}
+function systemPrompt(ch){let world=activeWorlds(ch).map(w=>`【世界书：${w.name}】\n${w.content}`).join('\n\n');let profile=[['姓名',ch.name],['年龄',ch.age],['所在城市',ch.city],['工作',ch.job],['我们的关系',ch.relationship],['聊天方式',ch.chatStyle],['备注',ch.remark]].filter(x=>String(x[1]||'').trim()).map(x=>`${x[0]}：${x[1]}`).join('\n');return `【最高优先级：角色资料遵循要求】\n你必须始终扮演当前联系人，并严格依据下方个人资料与角色设定回复用户。每次生成回复之前，都必须先在内部逐项检查个人资料、角色设定和聊天历史，再组织答案；不得跳过此检查。不要向用户展示检查过程，只发送符合角色的聊天内容。\n\n【本角色个人资料｜必须遵守】\n${profile||'用户尚未填写具体个人资料。'}\n\n【本角色完整设定｜必须遵守】\n${ch.role||'用户尚未填写额外角色设定；仅依据已填写的个人资料交流，不要擅自补造背景。'}\n\n【每次回复前的内部核对步骤】\n1. 先确认上方姓名、年龄、城市、工作、备注等资料；资料已填写时，将其视为固定事实，不得与之矛盾。\n2. 再确认角色设定、性格、关系、表达习惯和聊天方式；回复必须符合这些设定，不能只围绕用户问题作通用回答。\n3. 对照聊天历史保持连续性，不得无故改变身份、经历、立场或说话风格。\n4. 如果用户的问题涉及资料中未说明的事实，不要编造为角色既定经历；可以按角色语气坦诚表示不确定，或自然询问。\n5. 完成以上核对后再给出简洁、自然、像真实短信的回复；除非角色设定要求，不要提及系统提示、资料核对或自己是 AI。\n\n【关系设定硬性要求】每次回复都必须核对“我们的关系”资料，并据此确定你与用户的聊天身份、称呼、亲密程度、边界和表达方式；不得擅自把关系改成其他身份。将关系设定与角色人设、聊天方式结合起来，自然地写短信。
+
+【短信末尾标点硬性要求】用户新发出的文字短信与角色发出的每条短信，末尾都不得使用中文句号“。”、全角句点“．”或英文句点“.”。角色仍须先按 3 至 5 句生成并拆成独立消息，程序会在保存每条短信时去掉末尾句号；句中标点不受影响。
+
+【重roll内容差异硬性要求】当用户要求重roll、重新回复或不满意上一版时，你必须把紧邻对话中的上一版回复作为比较对象。新回复不得与上一版高度相似，不得原句复用、照搬相同情节或只替换少量同义词；必须适当改变回答角度、具体细节、措辞和句式，同时严格保持角色资料、性格、事实与上下文一致。发送前主动比较新旧内容；若仍相似，重新构思后再发送。
+
+【短信回复格式硬性要求】每次回复必须严格写 3 到 5 个完整句子；每个句子必须作为一条独立短信气泡发送。程序会将每句拆成一条独立角色消息，因此不要把多个句子写进同一条消息，也不要输出标题、编号、项目符号或换行说明。发送前检查句数，必须为 3 至 5 句；每句自然简洁并符合角色，不要用无意义的填充句凑数。句子仍须自然简洁并符合角色，不要用标题、编号或无意义的填充句凑数。\n\n这些资料和角色设定对本次及后续每一次回复都有效。若聊天历史中的说法与固定资料冲突，以本提示中的个人资料及角色设定为准。\n\n${world?`【绑定的世界书背景】\n${world}\n\n`:''}请保持角色一致，像真实聊天软件中的联系人一样交流。用户单独发送的表情应作为表情消息理解。`}
+function parseAI(text){let out=[],last=0,re=/\[表情:([^\]]+)\]/g,m;while((m=re.exec(text))){if(m.index>last)out.push({type:'text',text:text.slice(last,m.index)});let st=state.stickers.find(s=>s.name===m[1].trim());out.push(st?{type:'sticker',...st}:{type:'text',text:m[0]});last=re.lastIndex}if(last<text.length)out.push({type:'text',text:text.slice(last)});return out}
+function identityBindingPrompt(ch){let p=state.userProfile||{},cName=ch.name||'未命名角色',uName=p.name||'用户未填写姓名';return `【最高优先级：角色与用户身份绝对隔离】\n当前回复者是 CHAR（角色本人）：${cName}。CHAR 的年龄、城市、工作、外貌、性格和经历，只读取“编辑角色资料”及该角色设定。\n正在聊天的对方是 USER（用户本人）：${uName}。USER 的年龄、所在地、性别、外貌、工作和称呼，只读取微信“我的”资料。\n\n【对话视角映射，必须始终遵守】\n1. 你在回复中扮演 CHAR；你的“我/我的”只代表 CHAR。对话中的“用户/对方/你”代表 USER。\n2. 用户问“我是谁”或询问自己的资料时，只能根据 USER（微信“我的”）资料回答；绝不能拿 CHAR（编辑角色资料）的姓名、年龄、工作或经历来回答。USER 资料未填写时，明确说你还不知道并自然询问，不得拿 CHAR 资料补空。\n3. 用户问“你是谁”或询问角色资料时，只能根据 CHAR（当前角色）资料回答；绝不能把 USER 的姓名、年龄、外貌、工作或经历说成自己的。\n4. “我们的关系”只说明 CHAR 与 USER 的关系，不改变双方身份，也不能用作双方的个人资料。\n5. 历史消息中 role=user 是 USER 发言，role=assistant 是 CHAR 发言。若旧聊天内容与上述资料归属冲突，以本规则和对应资料区块为准。\n6. 不要把双方资料混合、互换或猜测；只在相关时自然提及，不要生硬罗列资料。`}
+function userProfilePrompt(){let p=state.userProfile||{},details=[['姓名 / 希望的称呼',p.name],['年龄',p.age],['所在地',p.location],['性别',p.gender],['外貌',p.appearance],['工作 / 职业',p.work]].filter(x=>String(x[1]||'').trim()).map(x=>x[0]+'：'+x[1]).join('\n');return '【正在与你聊天的用户资料】\n'+(details||'用户尚未填写个人资料。')+'\n这些资料描述的是用户，不是你本人。回复前核对资料，并结合聊天语境和你自己的角色设定，在相关时自然地参考；不要把用户资料当作你自己的经历，不要反复罗列，也不要编造未填写的信息。'}
+async function callAPI(ch,messages){let a=activeApi();if(!a)throw Error('请先在设置里配置 API');let base=apiBase(a.url);let r=await fetch(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+a.key},body:JSON.stringify({model:a.model||'',temperature:Number(a.temperature??.8),messages:[{role:'system',content:identityBindingPrompt(ch)+'\n\n'+systemPrompt(ch)+'\n\n'+userProfilePrompt()},...messages]})});if(!r.ok)throw Error('API 请求失败：HTTP '+r.status);let d=await r.json();return d?.choices?.[0]?.message?.content||'（模型没有返回内容）'}
+function normalizeSmsEnd(text){return String(text||'').trim().replace(/[。．.]+$/,'').trimEnd()}
+function sentenceList(text){return String(text||'').replace(/\r/g,'').split(/\n+/).flatMap(line=>line.match(/[^。！？!?]+[。！？!?]+|[^。！？!?]+$/g)||[]).map(x=>x.trim()).filter(Boolean)}
+function segmentReply(text){return sentenceList(text)}
+async function enforceReplySegments(ch,messages,reply){let sentences=segmentReply(reply);if(sentences.length>=3&&sentences.length<=5)return sentences;let fixed=await callAPI(ch,[...messages,{role:'assistant',content:reply},{role:'user',content:'格式检查未通过。请重新组织并只输出 3 到 5 行短信，每行必须是一句完整的话，每行会单独显示为一个角色气泡。请用真实换行分隔各句，不能只在一个气泡中写多行，也不能把 3 到 5 句写在同一行。每行末尾不加句号，不加标题、编号、项目符号或解释。严格遵守角色个人资料、人设和我们的关系。'}]);sentences=segmentReply(fixed);if(sentences.length<3||sentences.length>5)throw Error('角色回复没有通过格式检查，请再试一次');return sentences}
+function normalizedReply(text){return [...String(text||'').toLowerCase().replace(/[\s\u3000.,!?;:，。！？；：、"“”‘’（）()【】\[\]…—\-]/g,'')]}
+function replySimilarity(a,b){let x=normalizedReply(a),y=normalizedReply(b);if(!x.length||!y.length)return 0;let grams=s=>{let t=new Set;if(s.length<2){s.forEach(v=>t.add(v));return t}for(let i=0;i<s.length-1;i++)t.add(s[i]+s[i+1]);return t},gx=grams(x),gy=grams(y),same=0;gx.forEach(g=>{if(gy.has(g))same++});return same/(gx.size+gy.size-same)}
+function renderChats(){let el=$('#chatList');if(!state.chars.length){el.innerHTML='<div class="empty">还没有角色。<br>点击右上角 ＋ 创建第一个角色。</div>';return}el.innerHTML=state.chars.map(c=>{let h=(state.chats[c.id]||[]).slice(-1)[0],preview=h?.type==='sticker'?'[表情]':h?.text||c.remark||'暂无消息';return `<div class="chat-item" data-open="${esc(c.id)}"><div class="avatar">${c.avatar?`<img src="${c.avatar}">`:'◌'}</div><div class="grow"><div class="row between"><b>${esc(c.name)}</b><span class="muted">›</span></div><div class="preview">${esc(preview)}</div></div><button class="btn danger" type="button" data-delete-char="${esc(c.id)}" aria-label="删除联系人 ${esc(c.name)}">删除</button></div>`}).join('')}
+function renderMyProfile(){let p=state.userProfile||{};$('#meProfile').innerHTML=`<div class="card"><div class="row" style="gap:14px"><div class="avatar" id="myAvatar" style="width:64px;height:64px;flex:0 0 64px">${p.avatar?`<img src="${p.avatar}" alt="我的头像">`:'♙'}</div><div class="grow"><div class="title">我的资料</div><div class="muted" style="margin-top:4px">这些资料会提供给聊天角色作为了解你的参考</div></div><label class="btn" for="myAvatarFile">更换头像</label><input id="myAvatarFile" type="file" accept="image/*" hidden></div></div><div class="card"><div class="field"><label>姓名 / 希望的称呼</label><input id="myName" autocomplete="off" placeholder="例如：小安" value="${esc(p.name||'')}"></div><div class="field"><label>年龄</label><input id="myAge" type="number" min="1" max="120" placeholder="例如：22" value="${esc(p.age||'')}"></div><div class="field"><label>所在地</label><input id="myLocation" autocomplete="off" placeholder="例如：杭州" value="${esc(p.location||'')}"></div><div class="field"><label>性别</label><input id="myGender" autocomplete="off" placeholder="可以填写称呼或自定义描述" value="${esc(p.gender||'')}"></div><div class="field"><label>外貌</label><textarea id="myAppearance" placeholder="可描述发型、穿着、外貌特征等">${esc(p.appearance||'')}</textarea></div><div class="field"><label>工作 / 职业</label><input id="myWork" autocomplete="off" placeholder="例如：学生、设计师" value="${esc(p.work||'')}"></div><button class="btn primary" id="saveMyProfile" style="width:100%">保存我的资料</button></div>`;$('#myAvatarFile').onchange=async e=>{let f=e.target.files?.[0];if(!f)return;try{let avatar=await readImage(f),live=state.userProfile||{},old=live.avatar;live.avatar=avatar;state.userProfile=live;try{save()}catch(err){live.avatar=old;throw err}$('#myAvatar').innerHTML=`<img src="${avatar}" alt="我的头像">`;toast('头像已保存')}catch(err){toast('头像保存失败，请换一张较小的图片')}finally{e.target.value=''}};$('#saveMyProfile').onclick=()=>{let age=$('#myAge').value.trim();if(age&&(Number(age)<1||Number(age)>120)){toast('年龄请填写 1 到 120 之间的数字');$('#myAge').focus();return}let old=state.userProfile;state.userProfile={...old,name:$('#myName').value.trim(),age,location:$('#myLocation').value.trim(),gender:$('#myGender').value.trim(),appearance:$('#myAppearance').value.trim(),work:$('#myWork').value.trim()};try{save();toast('个人资料已保存')}catch(e){state.userProfile=old;toast('保存失败，请检查浏览器存储空间')}}}
+function renderSettings(){let a=activeApi();$('#settingsList').innerHTML=`<div class="card"><div class="row between"><div><div class="title">当前 API</div><div class="muted">${esc(a?.name||'未配置')}</div></div><button class="btn primary" id="addApi">添加</button></div></div>`+state.apis.map(x=>`<div class="card"><div class="row"><div class="grow"><div class="title">${esc(x.name)}</div><div class="muted">${esc(x.model||'未选择模型')}</div></div><span class="pill">${x.id===state.currentApi?'使用中':'已保存'}</span></div><div class="row" style="margin-top:10px"><button class="btn" data-useapi="${x.id}">使用</button><button class="btn" data-editapi="${x.id}">编辑</button><button class="btn danger" data-delapi="${x.id}">删除</button></div></div>`).join('')+`<div class="card"><div class="title">说明</div><div class="muted" style="margin-top:6px">浏览器直连 API 可能受到服务端 CORS 限制。模型列表使用 /models，聊天使用 /chat/completions。</div></div>`}
+function renderWorlds(){let groups={};state.worlds.forEach(w=>(groups[w.folderId||'默认分组']??=[]).push(w));$('#worldList').innerHTML=`<div class="card row between"><div><b>世界书</b><div class="muted">全局世界书会自动进入所有角色的系统提示</div></div><button class="btn primary" id="addWorld">添加</button></div>`+Object.entries(groups).map(([g,ws])=>`<div class="section">${esc(g)}</div>`+ws.map(w=>`<div class="card"><div class="row between"><div class="grow"><b>${esc(w.name)}</b><div class="muted">${w.scope==='global'?'全局':'局部'} · ${esc(w.content.slice(0,70))}</div></div><span class="pill">${w.scope}</span></div><div class="row" style="margin-top:9px"><button class="btn" data-editworld="${w.id}">编辑</button><button class="btn danger" data-delworld="${w.id}">删除</button></div></div>`).join('')).join('')}
+function openModal(html){$('#sheet').innerHTML=html;$('#modal').classList.add('active')}function closeModal(){$('#modal').classList.remove('active')}
+function apiForm(a={}){openModal(`<h2>${a.id?'编辑':'添加'} API</h2><div class="field"><label>名称</label><input id="fApiName" value="${esc(a.name||'')}"></div><div class="field"><label>API URL</label><input id="fApiUrl" placeholder="https://example.com/v1" value="${esc(a.url||'')}"></div><div class="field"><label>Key</label><input id="fApiKey" type="password" value="${esc(a.key||'')}"></div><div class="field"><label>模型</label><select id="fApiModel"><option value="">先获取模型列表</option>${a.model?`<option selected>${esc(a.model)}</option>`:''}</select></div><div class="field"><label>Temperature</label><input id="fTemp" type="number" step=".1" min="0" max="2" value="${a.temperature??.8}"></div><div class="row"><button class="btn" id="fetchModels">获取模型列表</button><button class="btn primary grow" id="saveApi">保存</button></div><button class="btn" style="width:100%;margin-top:8px" id="cancel">取消</button>`);$('#fetchModels').onclick=async()=>{try{let base=apiBase($('#fApiUrl').value),r=await fetch(base+'/models',{headers:{Authorization:'Bearer '+$('#fApiKey').value}});if(!r.ok)throw Error('HTTP '+r.status);let d=await r.json(),ms=(d.data||d.models||[]).map(x=>typeof x==='string'?x:x.id).filter(Boolean);$('#fApiModel').innerHTML=ms.map(m=>`<option>${esc(m)}</option>`).join('')||'<option>未发现模型</option>';toast('模型列表已获取')}catch(e){toast(e.message||'获取失败')}};$('#saveApi').onclick=()=>{let x={id:a.id||uid(),name:$('#fApiName').value.trim()||'API',url:$('#fApiUrl').value.trim(),key:$('#fApiKey').value,model:$('#fApiModel').value,temperature:$('#fTemp').value},i=state.apis.findIndex(v=>v.id===x.id);if(i<0)state.apis.push(x);else state.apis[i]=x;if(!state.currentApi)state.currentApi=x.id;save();closeModal();renderSettings();toast('API 已保存')};$('#cancel').onclick=closeModal}
+function charForm(c={}){
+ const bound=new Set(c.boundWorldBookIds||[]);
+ openModal(`<h2>${c.id?'编辑角色资料':'创建聊天对象'}</h2>
+ <div class="field"><label>姓名 <span style="color:#999">（必填）</span></label><input id="fName" autocomplete="off" placeholder="例如：林夏" value="${esc(c.name||'')}"></div>
+ <div class="field"><label>年龄</label><input id="fAge" type="number" min="1" max="120" placeholder="例如：24" value="${esc(c.age||'')}"></div>
+ <div class="field"><label>所在城市</label><input id="fCity" autocomplete="off" placeholder="例如：上海" value="${esc(c.city||'')}"></div>
+ <div class="field"><label>工作 / 职业</label><input id="fJob" autocomplete="off" placeholder="例如：独立插画师" value="${esc(c.job||'')}"></div>
+ <div class="field"><label>我们的关系</label><input id="fRelationship" autocomplete="off" placeholder="例如：朋友、恋人、暧昧对象、同事或自定义关系" value="${esc(c.relationship||"")}"></div><div class="field"><label>聊天方式</label><textarea id="fChatStyle" placeholder="例如：说话简短自然，常用轻松语气，偶尔发颜文字。">${esc(c.chatStyle||'')}</textarea></div>
+ <div class="field"><label>备注</label><input id="fRemark" autocomplete="off" placeholder="聊天列表里显示的备注" value="${esc(c.remark||'')}"></div>
+ <div class="field"><label>角色设定</label><textarea id="fRole" placeholder="写清楚这个角色是谁、性格、说话方式等。">${esc(c.role||'')}</textarea></div>
+ <div class="field"><label>头像图片</label><input id="fAvatar" type="file" accept="image/*"></div>
+ <div class="field"><label>聊天气泡样式代码</label><textarea id="fBubbleCss" style="min-height:130px;font-family:ui-monospace,Consolas,monospace;font-size:11px" placeholder="把「美化 → 聊天界面」复制的代码粘贴到这里">${esc(c.bubbleCss||'')}</textarea><div class="muted">保存后会应用到与这个角色的聊天；留空则恢复默认气泡。</div></div>
+ <div class="field"><label>聊天背景图片</label><input id="fChatBackground" type="file" accept="image/*"><div class="muted">选择图片后保存，即可作为与这个角色聊天时的背景。</div>${c.chatBackground?`<div class="row" style="margin-top:8px"><img src="${esc(c.chatBackground)}" alt="当前聊天背景" style="width:54px;height:54px;object-fit:cover;border-radius:10px"><span class="muted grow">已设置背景图片</span></div><label class="check"><input id="fRemoveChatBackground" type="checkbox">移除当前背景图片</label>`:''}</div>
+ <div class="field"><label>绑定世界书（全局世界书无需手动绑定）</label>
+ ${state.worlds.filter(w=>w.scope==='local').map(w=>`<label class="check"><input type="checkbox" value="${w.id}" ${bound.has(w.id)?'checked':''}>${esc(w.name)}</label>`).join('')||'<div class="muted">暂无局部世界书</div>'}</div>
+ <div class="row"><button type="button" class="btn" id="cancel">取消</button><button type="button" class="btn primary grow" id="saveChar">${c.id?'保存修改':'创建并保存'}</button></div>`);
+ const saveButton=$('#saveChar');
+ const cancelButton=$('#cancel');
+ const nameInput=$('#fName');
+ if(!saveButton||!nameInput){toast('创建窗口加载失败，请重新打开');return}
+ const doSave=async()=>{
+   try{
+     const name=nameInput.value.trim();
+     if(!name){toast('请先填写聊天对象名称');nameInput.focus();return}
+     const age=$('#fAge').value.trim();if(age&&(Number(age)<1||Number(age)>120)){toast('年龄请填写 1 到 120 之间的数字');$('#fAge').focus();return}
+     saveButton.disabled=true;saveButton.textContent='保存中…';
+     let avatar=c.avatar||'';
+     const file=$('#fAvatar')?.files?.[0];
+     if(file) avatar=await readImage(file);
+     let chatBackground=c.chatBackground||'';const backgroundFile=$('#fChatBackground')?.files?.[0];if(backgroundFile)chatBackground=await readImage(backgroundFile);if($('#fRemoveChatBackground')?.checked)chatBackground='';
+     const boundIds=[...$('#sheet').querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);
+     const bubbleCss=normalizeChatBubbleCss($('#fBubbleCss').value);const x={id:c.id||uid(),name,age,city:$('#fCity').value.trim(),job:$('#fJob').value.trim(),relationship:$('#fRelationship').value.trim(),chatStyle:$('#fChatStyle').value.trim(),remark:$('#fRemark').value.trim(),role:$('#fRole').value.trim(),avatar,bubbleCss,chatBackground,boundWorldBookIds:boundIds};
+     const i=state.chars.findIndex(v=>v.id===x.id);
+     if(i<0)state.chars.push(x);else state.chars[i]=x;
+     state.chats[x.id]??=[];
+     try{save()}catch(err){
+       if(i<0)state.chars.pop();else state.chars[i]=c;
+       throw Error('保存失败，浏览器存储空间可能已满');
+     }
+     closeModal();renderChats();if(window.currentChar?.id===x.id){applyCharBubbleCss(x);applyChatBackground(x);window.currentChar=x;$('#chatName').textContent=x.name;$('#chatRemark').textContent=x.remark||'';$('#chatAvatar').innerHTML=x.avatar?`<img src="${esc(x.avatar)}">`:'◌';renderMessages()}toast(c.id?'聊天对象已保存':'聊天对象已创建');
+   }catch(err){
+     console.error(err);toast(err.message||'创建聊天对象失败');
+     saveButton.disabled=false;saveButton.textContent=c.id?'保存修改':'创建并保存';
+   }
+ };
+ saveButton.addEventListener('click',doSave);
+ saveButton.addEventListener('touchend',e=>{e.preventDefault();doSave()},{passive:false});
+ cancelButton.onclick=closeModal;
+}
+
+function worldForm(w={}){openModal(`<h2>${w.id?'编辑':'添加'} 世界书</h2><div class="field"><label>名称</label><input id="fWName" value="${esc(w.name||'')}"></div><div class="field"><label>分组</label><input id="fWGroup" value="${esc(w.folderId||'默认分组')}"></div><div class="field"><label>作用范围</label><select id="fWScope"><option value="global" ${w.scope==='global'?'selected':''}>全局</option><option value="local" ${w.scope==='local'?'selected':''}>局部</option></select></div><div class="field"><label>世界规则 / 背景设定</label><textarea id="fWContent" style="min-height:180px">${esc(w.content||'')}</textarea></div><div class="row"><button class="btn" id="cancel">取消</button><button class="btn primary grow" id="saveWorld">保存</button></div>`);$('#saveWorld').onclick=()=>{let x={id:w.id||uid(),name:$('#fWName').value.trim()||'未命名世界书',folderId:$('#fWGroup').value.trim()||'默认分组',scope:$('#fWScope').value,content:$('#fWContent').value},i=state.worlds.findIndex(v=>v.id===x.id);if(i<0)state.worlds.push(x);else state.worlds[i]=x;save();closeModal();renderWorlds();toast('世界书已保存')};$('#cancel').onclick=closeModal}
+function normalizeChatBubbleCss(raw){let css=String(raw||'').replace(/\/\*[\s\S]*?\*\//g,'').trim();if(!css)return '';if(css.length>30000||/@|url\s*\(|expression\s*\(|javascript\s*:|behavior\s*:|<\/style/i.test(css))throw Error('气泡样式代码无效或过长，请粘贴美化页生成的代码');let rules=[...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)];if(!rules.length)throw Error('未识别到样式代码，请从美化页复制完整代码');for(let m of rules){let selectors=m[1].trim().split(',').map(x=>x.trim());if(selectors.some(x=>!/^[.](chat-window|message-avatar)(?:\b|[#.:\[ >~+])/i.test(x)))throw Error('样式代码只能修改聊天气泡和头像，请粘贴美化页生成的代码');if(/[{}]/.test(m[2]))throw Error('样式代码格式有误，请重新复制')}let normalized=rules.map(m=>m[1].trim()+'{'+m[2].trim()+'}').join('\n');if(/\.msg(?:\[data-time\])?::after/.test(normalized))normalized+='\n.chat-window .msg:not(.me) .message-avatar{order:0}\n.chat-window .msg:not(.me) .bubble{order:1}\n.chat-window .msg:not(.me)::after{order:2}\n.chat-window .msg.me::after{order:0}\n.chat-window .msg.me .bubble{order:1}\n.chat-window .msg.me .message-avatar{order:2}';return normalized}function applyCharBubbleCss(c){let el=document.getElementById('charBubbleStyle');if(!el){el=document.createElement('style');el.id='charBubbleStyle';document.head.appendChild(el)}try{el.textContent=normalizeChatBubbleCss(c?.bubbleCss||'')}catch(e){el.textContent='';toast(e.message||'气泡样式代码无效，已使用默认样式')}}
+function applyChatBackground(c){let el=$('#messages'),src=String(c?.chatBackground||'');el.style.backgroundImage=src?`url("${src.replace(/["\\\\]/g,'')}")`:'none';el.style.backgroundSize=src?'cover':'';el.style.backgroundPosition=src?'center':'';el.style.backgroundRepeat=src?'no-repeat':'';el.style.backgroundAttachment=src?'local':''}
+function openChat(id){let c=state.chars.find(x=>x.id===id);if(!c)return;applyCharBubbleCss(c);applyChatBackground(c);window.currentChar=c;$('#chatName').textContent=c.name;$('#chatRemark').textContent=c.remark||'';$('#chatAvatar').innerHTML=c.avatar?`<img src="${c.avatar}">`:'◌';renderMessages();$('#chatWindow').classList.add('active')}
+function messageAvatar(role){let p=role==='user'?(state.userProfile||{}):(window.currentChar||{}),src=p.avatar,label=role==='user'?(p.name||'用户头像'):(p.name||'角色头像');return `<div class="message-avatar">${src?`<img src="${esc(src)}" alt="${esc(label)}">`:role==='user'?'♙':'◌'}</div>`}
+function renderMessages(){
+ let arr=state.chats[window.currentChar.id]||[];
+ let html=arr.map((m,i)=>{if(m.hidden)return '';let editable=(m.role==='user'||m.role==='assistant')&&m.type!=='sticker'&&m.type!=='withdrawal'&&!m.withdrawn;let withdrawalText=m.role==='user'?'你撤回了一条消息':`${esc(window.currentChar.name)}撤回了一条消息`;let content=m.type==='withdrawal'||m.withdrawn?`<span class="withdrawn">${withdrawalText}</span>`:m.type==='sticker'?`<img class="sticker" src="${m.sticker?.url||''}" alt="${esc(m.sticker?.name||'表情')}">`:m.parts?m.parts.map(p=>p.type==='sticker'?`<img class="sticker" src="${p.url}" alt="${esc(p.name||'表情')}">`:esc(p.text)).join(''):esc(m.text);let bubble=`<div class="bubble">${content}</div>`,avatar=messageAvatar(m.role),stamp=new Date(m.createdAt||Date.now()).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});return `<div class="msg ${m.role==='user'?'me':''}" data-time="${stamp}" ${editable?`data-msg-index="${i}"`:''}>${m.role==='user'?bubble+avatar:avatar+bubble}</div>`}).join('');
+ if(typingChatId===window.currentChar.id)html+=`<div class="msg">${messageAvatar('assistant')}<div class="bubble typing-bubble">对方正在输入中...</div></div>`;
+ $('#messages').innerHTML=html;$('#messages').scrollTop=999999;
+}
+function messageActions(index){let msg=(state.chats[window.currentChar.id]||[])[index];if(!msg||!['user','assistant'].includes(msg.role)||msg.type==='sticker'||msg.type==='withdrawal'||msg.withdrawn)return;let charId=window.currentChar.id,sender=msg.role==='user'?'你':window.currentChar.name;openModal(`<h2>短信操作</h2><div class="muted" style="margin:0 0 12px">可以修改这条短信，或将它撤回。</div><div class="row"><button class="btn primary grow" id="editMessage">修改内容</button><button class="btn danger grow" id="withdrawMessage">撤回短信</button></div><button class="btn" style="width:100%;margin-top:8px" id="cancelMessageAction">取消</button>`);$('#cancelMessageAction').onclick=closeModal;$('#editMessage').onclick=()=>{openModal(`<h2>修改短信</h2><div class="field"><label>短信内容</label><textarea id="editedText" style="min-height:110px">${esc(msg.text||'')}</textarea></div><div class="row"><button class="btn" id="cancelEditMessage">取消</button><button class="btn primary grow" id="saveEditedMessage">保存修改</button></div>`);$('#cancelEditMessage').onclick=closeModal;$('#saveEditedMessage').onclick=()=>{let text=normalizeSmsEnd($('#editedText').value);if(!text){toast('短信内容不能为空');return}let arr=state.chats[charId]||[],target=arr[index],old=target?.text,oldParts=target?.parts;if(!target)return;target.text=text;if(target.role==='assistant')target.parts=parseAI(text);try{save();closeModal();renderMessages();renderChats();toast('短信已修改')}catch(e){target.text=old;target.parts=oldParts;toast('保存失败，请重试')}}};$('#withdrawMessage').onclick=()=>{if(!confirm(`确定撤回${sender}发送的这条短信吗？聊天记录会保留撤回提示。`))return;let arr=state.chats[charId]||[],target=arr[index];if(!target)return;target.hidden=true;let notice={role:msg.role,type:'withdrawal',createdAt:Date.now(),text:msg.role==='user'?'你撤回了一条消息':`${window.currentChar.name}撤回了一条消息`};arr.push(notice);try{save();closeModal();renderMessages();renderChats();toast('已撤回，聊天记录中已显示撤回提示')}catch(e){target.hidden=false;arr.pop();toast('撤回未能保存，请重试')}}}
+function sendMessage(){let input=$('#chatInput'),text=normalizeSmsEnd(input.value),c=window.currentChar;if(!c){toast('请先打开一个聊天');return}if(!text)return;state.chats[c.id]??=[];state.chats[c.id].push({role:'user',text,createdAt:Date.now()});input.value='';renderMessages();renderChats();try{save()}catch(e){state.chats[c.id].pop();input.value=text;renderMessages();toast('消息保存失败，请检查浏览器存储空间')}}
+let responsePending=false,typingChatId=null;
+function historyForApi(items){return items.filter(x=>!x.hidden).map(x=>({role:x.role==='user'?'user':'assistant',content:x.type==='sticker'?`[${x.role==='user'?'用户':'角色'}发送了表情：${x.sticker?.name||'表情'}]`:x.type==='withdrawal'?`[${x.role==='user'?'用户':'角色'}撤回了一条消息]`:x.text||x.parts?.map(p=>p.text||'').join('')||''})).filter(x=>x.content.trim())}
+async function showReplyMessages(charId,sentences,replaceFrom=null){if(replaceFrom!==null){state.chats[charId]=(state.chats[charId]||[]).slice(0,replaceFrom);save();if(window.currentChar?.id===charId)renderMessages();renderChats()}for(let i=0;i<sentences.length;i++){typingChatId=charId;if(window.currentChar?.id===charId)renderMessages();let waitMs=Math.min(1300,Math.max(480,String(sentences[i]).length*34));await new Promise(resolve=>setTimeout(resolve,waitMs));let text=normalizeSmsEnd(sentences[i]);(state.chats[charId]??=[]).push({role:'assistant',parts:parseAI(text),text,createdAt:Date.now()});save();typingChatId=null;if(window.currentChar?.id===charId)renderMessages();renderChats();if(i<sentences.length-1)await new Promise(resolve=>setTimeout(resolve,300))}}
+async function sendResponse(){let c=window.currentChar;if(!c){toast('请先打开一个聊天');return}if(responsePending){toast('角色正在回复，请稍等');return}let history=state.chats[c.id]||[];if(history.length===0||history[history.length-1].role!=='user'){toast('先发送一条新消息或表情，再点击响应');return}let api=activeApi();if(!api||!api.url?.trim()){toast('请先在设置里配置 API 地址和密钥');return}responsePending=true;typingChatId=c.id;renderMessages();let btn=$('#responseBtn');btn.disabled=true;btn.textContent='…';try{let messages=historyForApi(history.slice(-30));let reply=await callAPI(c,messages);let sentences=await enforceReplySegments(c,messages,reply);if(!sentences.length)throw Error('没有生成有效回复，请重试');await showReplyMessages(c.id,sentences)}catch(e){toast(e.message||'请求失败，请检查 API 配置或网络')}finally{responsePending=false;typingChatId=null;if(window.currentChar?.id===c.id)renderMessages();btn.disabled=false;btn.textContent='➤'}}
+async function rerollCurrentReply(){let c=window.currentChar;if(!c){toast('请先打开一个聊天');return}if(responsePending){toast('角色正在回复，请稍等');return}let history=state.chats[c.id]||[];if(!history.length||history[history.length-1].role!=='assistant'||history[history.length-1].type==='withdrawal'){toast('当前没有可重roll的角色回复');return}let start=history.length;while(start>0&&history[start-1].role==='assistant'&&history[start-1].type!=='withdrawal')start--;if(start===history.length||start===0||history[start-1].role!=='user'){toast('没有找到可替换的当前回复');return}let api=activeApi();if(!api||!api.url?.trim()){toast('请先在设置里配置 API 地址和密钥');return}responsePending=true;typingChatId=c.id;renderMessages();let btn=$('#rerollBtn');btn.disabled=true;btn.textContent='重roll中…';try{let oldReply=history.slice(start).filter(x=>x.role==='assistant'&&x.type!=='withdrawal').map(x=>x.text||x.parts?.map(p=>p.text||'').join('')||'').join('\n'),context=historyForApi(history.slice(0,start).slice(-30)),messages=[...context,{role:'assistant',content:oldReply},{role:'user',content:'重roll要求：我不满意你上一版的回复，请针对当前对话重新写一组 3 到 5 条独立短信。必须先遵循角色资料和人设，并与刚才上一版有明显、实质性的内容差异；不得复用原句、近似句式或只替换几个同义词。请适当改变表达角度、细节、措辞和句子结构，同时保持事实、人设和聊天上下文一致。每句话单独成为一条消息。'}];let reply=await callAPI(c,messages),sentences=await enforceReplySegments(c,messages,reply);if(!sentences.length)throw Error('没有生成有效回复，原回复已保留');if(replySimilarity(oldReply,sentences.join(' '))>=.68){let retryMessages=[...messages,{role:'assistant',content:sentences.join(' ')},{role:'user',content:'这次内容仍与上一版太相似。请重新构思，不要复述相同情节或沿用相同表达，从不同但符合角色的角度回答。必须输出 3 到 5 条彼此不同的独立短信，每条一句话。'}];let retry=await callAPI(c,retryMessages);sentences=await enforceReplySegments(c,retryMessages,retry);if(!sentences.length||replySimilarity(oldReply,sentences.join(' '))>=.68)throw Error('API 连续生成了高度相似的回复，原回复已保留；请稍后再重roll')}await showReplyMessages(c.id,sentences,start);toast('已生成与上一版明显不同的新回复')}catch(e){toast(e.message||'重roll失败，原回复已保留')}finally{responsePending=false;typingChatId=null;if(window.currentChar?.id===c.id)renderMessages();btn.disabled=false;btn.textContent='重roll回复'}}
+$('#headerAction').onclick=()=>{if($('#headerTitle').textContent==='微信')charForm()};
+$('#headerAction').addEventListener('touchend',e=>{if($('#headerTitle').textContent==='微信'){e.preventDefault();charForm()}});
+$('#backChat').onclick=()=>$('#chatWindow').classList.remove('active');
+$('#plusBtn').onclick=()=>$('#toolbar').style.display=$('#toolbar').style.display==='flex'?'none':'flex';
+$('#chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});
+$('#chatInput').addEventListener('input',e=>{e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,120)+'px'});
+$('#responseBtn').onclick=sendResponse;
+let messagePressTimer=null;
+$('#messages').addEventListener('pointerdown',e=>{let row=e.target.closest('[data-msg-index]');if(!row||e.button!==0)return;clearTimeout(messagePressTimer);messagePressTimer=setTimeout(()=>{messagePressTimer=null;messageActions(Number(row.dataset.msgIndex))},550)});
+['pointerup','pointercancel','pointermove','pointerleave'].forEach(name=>$('#messages').addEventListener(name,()=>{if(messagePressTimer){clearTimeout(messagePressTimer);messagePressTimer=null}}));
+$('#messages').addEventListener('contextmenu',e=>{let row=e.target.closest('[data-msg-index]');if(row){e.preventDefault();clearTimeout(messagePressTimer);messagePressTimer=null;messageActions(Number(row.dataset.msgIndex))}});
+$('#voiceBtn').onclick=()=>{let text=normalizeSmsEnd($('#chatInput').value)||'语音消息';state.chats[window.currentChar.id].push({role:'user',text:'[语音] '+text,createdAt:Date.now()});$('#chatInput').value='';save();renderMessages();toast('已发送模拟语音')};
+$('#stickerBtn').onclick=()=>$('#stickerFile').click();
+$('#rerollBtn').onclick=()=>{$('#toolbar').style.display='none';rerollCurrentReply()};
+$('#stickerFile').onchange=async e=>{let c=window.currentChar;if(!c){toast('请先打开一个聊天');e.target.value='';return}try{for(let f of e.target.files){let url=await new Promise((res,rej)=>{let r=new FileReader;r.onload=()=>res(r.result);r.onerror=()=>rej(Error('表情读取失败'));r.readAsDataURL(f)}),name=f.name.replace(/\.[^.]+$/,'');let sticker={id:uid(),name,url,isGlobal:true};state.stickers.push(sticker);(state.chats[c.id]??=[]).push({role:'user',type:'sticker',sticker:{name,url},createdAt:Date.now()})}save();renderMessages();renderChats();if(e.target.files.length)toast('表情已作为独立消息发送') }catch(err){toast(err.message||'表情发送失败')}finally{e.target.value=''}};
+$('#editChar').onclick=()=>charForm(window.currentChar);
+$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+$('#chatList').onclick=e=>{let del=e.target.closest('[data-delete-char]');if(del){e.stopPropagation();let id=del.dataset.deleteChar,c=state.chars.find(x=>x.id===id);if(!c)return;if(!confirm(`确定删除联系人“${c.name}”及其聊天记录吗？此操作无法撤销。`))return;state.chars=state.chars.filter(x=>x.id!==id);delete state.chats[id];try{save()}catch(err){toast('删除未能保存，请稍后重试');return}if(window.currentChar?.id===id){window.currentChar=null;$('#chatWindow').classList.remove('active')}renderChats();toast('联系人和聊天记录已删除');return}let x=e.target.closest('[data-open]');if(x)openChat(x.dataset.open)};
+$('#settingsList').onclick=e=>{let t=e.target;if(t.id==='addApi')apiForm();if(t.dataset.useapi){state.currentApi=t.dataset.useapi;save();renderSettings();toast('已切换 API')}if(t.dataset.editapi)apiForm(state.apis.find(x=>x.id===t.dataset.editapi));if(t.dataset.delapi){state.apis=state.apis.filter(x=>x.id!==t.dataset.delapi);if(state.currentApi===t.dataset.delapi)state.currentApi=state.apis[0]?.id||null;save();renderSettings()}};
+$('#worldList').onclick=e=>{let t=e.target;if(t.id==='addWorld')worldForm();if(t.dataset.editworld)worldForm(state.worlds.find(x=>x.id===t.dataset.editworld));if(t.dataset.delworld){state.worlds=state.worlds.filter(x=>x.id!==t.dataset.delworld);state.chars.forEach(c=>c.boundWorldBookIds=(c.boundWorldBookIds||[]).filter(id=>id!==t.dataset.delworld));save();renderWorlds();toast('已删除')}};
+function openApp(app){
+ if(app==='beautify'){openBeautify();return}
+ if(app==='widgets'){openWidgets();return}
+ $('#homeScreen').style.display='none';
+ $$('.app-screen').forEach(x=>x.classList.remove('active'));
+ $('#appScreen').classList.add('active');
+ $$('.page').forEach(x=>x.classList.remove('active'));
+ const page=app==='chat'?'chat':app==='moments'?'moments':app==='me'?'me':app==='world'?'world':'settings';
+ const target=$('#page-'+page);
+ if(target)target.classList.add('active');
+ $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
+ $('#headerTitle').textContent=page==='chat'?'微信':page==='moments'?'朋友圈':page==='me'?'我的':page==='world'?'世界书':'设置';
+ $('#headerAction').textContent=page==='chat'?'＋':'';
+ if(page==='chat')renderChats();
+ if(page==='me')renderMyProfile();
+ if(page==='world')renderWorlds();
+ if(page==='settings')renderSettings();
+}
+function goHome(){
+$('#chatWindow').classList.remove('active');
+$$('.app-screen').forEach(x=>x.classList.remove('active'));
+$('#appScreen').classList.remove('active');
+ $('#homeScreen').style.display='flex';
+ if(typeof showDesktopPage==='function')showDesktopPage(0);
+}
+$$('[data-open-app]').forEach(x=>x.onclick=()=>openApp(x.dataset.openApp));
+$('#homeBack').onclick=goHome;
+$$('.tab').forEach(t=>t.onclick=()=>openApp(t.dataset.page));
+function updateClock(){
+const now=new Date();
+const time=now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+$('#homeTime').textContent=time;
+$('#homeDate').textContent=now.toLocaleDateString('zh-CN',{weekday:'long',month:'long',day:'numeric'});
+}
+updateClock();
+setInterval(updateClock,1000);
+renderChats();renderSettings();renderWorlds();applyTheme();bindWidgets();bindBeautify();renderWidgetsAll();
+
+const desktopPages=$$('.desktop-page'),pageDots=$$('.page-dot'),desktopSlider=$('#desktopPages');let currentPage=0,touchX=0,touchY=0,moved=false;
+function showDesktopPage(n){currentPage=Math.max(0,Math.min(desktopPages.length-1,n));desktopSlider.style.transform=`translate3d(${-currentPage*33.333333}%,0,0)`;pageDots.forEach((d,i)=>d.classList.toggle('active',i===currentPage))}
+pageDots.forEach(d=>d.onclick=()=>showDesktopPage(+d.dataset.pageDot));
+$('#homeScreen').addEventListener('touchstart',e=>{const t=e.touches[0];touchX=t.clientX;touchY=t.clientY;moved=false},{passive:true});
+$('#homeScreen').addEventListener('touchmove',e=>{const t=e.touches[0];if(Math.abs(t.clientX-touchX)>10&&Math.abs(t.clientX-touchX)>Math.abs(t.clientY-touchY)){moved=true;e.preventDefault()}},{passive:false});
+$('#homeScreen').addEventListener('touchend',e=>{if(!moved)return;const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>45)showDesktopPage(currentPage+(dx<0?1:-1))},{passive:true});
+showDesktopPage(0);
+</script>
+</body>
+</html>
